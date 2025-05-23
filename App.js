@@ -23,6 +23,7 @@ export default function App() {
       setCurrentPrice(data.currentPrice);
     
       const evaluation = analyzeStock(data);
+      evaluation.revenueGrowthByYear = data.revenueGrowthByYear;
       setAnalysis(evaluation);
     
       try {

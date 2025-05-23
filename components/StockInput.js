@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import sp500 from "../assets/sp500.json"
 
-const API_KEY = "d0jmdq9r01qjm8s227m0d0jmdq9r01qjm8s227mg";
-const BASE_URL = "https://finnhub.io/api/v1";
+const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
+const BASE_URL = "https://financialmodelingprep.com/api/v3";
 
 export default function StockInput({ value, onChange }) {
   const [query, setQuery] = useState(value);
@@ -26,20 +26,16 @@ export default function StockInput({ value, onChange }) {
     }
   
     const timeoutId = setTimeout(() => {
-      // Elsőként lokális keresés
       const lcQuery = query.toLowerCase();
 
       const localMatches = sp500.filter(item =>
         (item.Security && item.Security.toLowerCase().includes(lcQuery)) ||
         (item.Symbol && item.Symbol.toLowerCase().startsWith(lcQuery))
       );
-      
-      
-  
+
       if (localMatches.length > 0) {
         setSuggestions(localMatches);
       } else {
-        // Ha nincs találat, hívjuk az API-t
         fetch(`${BASE_URL}/search?q=${query}&token=${API_KEY}`)
           .then((res) => res.json())
           .then((data) => {
@@ -51,14 +47,15 @@ export default function StockInput({ value, onChange }) {
   
     return () => clearTimeout(timeoutId);
   }, [query]);
-  
 
-  const handleSelect = (symbol) => {
-    setQuery(symbol);
+  // módosított handleSelect, itt teljes szöveget állítunk be
+  const handleSelect = (item) => {
+    const fullText = `${item.Symbol} - ${item.Security || item.name || 'Név nem elérhető'}`;
+    setQuery(fullText);
     setSuggestions([]);
-    setFocused(false); // bezárjuk a listát
-    onChange(symbol);
-    Keyboard.dismiss(); // bezárjuk a billentyűzetet is
+    setFocused(false);
+    onChange(item.Symbol);  // onChange csak a szimbólumot kapja meg, mert valószínűleg arra van szükség
+    Keyboard.dismiss();
   };
 
   return (
@@ -71,7 +68,10 @@ export default function StockInput({ value, onChange }) {
           style={styles.input}
           placeholder="Pl.: AAPL, MSFT"
           value={query}
-          onChangeText={setQuery}
+          onChangeText={text => {
+            setQuery(text);
+            onChange(text); // ha a felhasználó gépel, itt továbbítjuk az input szöveget
+          }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -79,29 +79,28 @@ export default function StockInput({ value, onChange }) {
           <FlatList
             keyboardShouldPersistTaps="handled"
             data={suggestions}
-            keyExtractor={(item) => item.symbol}
+            keyExtractor={(item) => item.Symbol || item.symbol}
             style={styles.suggestionList}
             renderItem={({ item }) => {
               const symbol = item.Symbol || 'N/A';
               const name = item.Security || 'N/A';
               const isPrimary = symbol && !symbol.includes('.');
               
-            
               return (
-                <TouchableOpacity onPress={() => handleSelect(symbol)}>
+                <TouchableOpacity onPress={() => handleSelect(item)}>
                   <Text style={[styles.suggestionItem, isPrimary && styles.primarySuggestion]}>
                     {symbol} - {name}
                   </Text>
                 </TouchableOpacity>
               );
             }}
-                 
           />
         )}
       </View>
     </TouchableWithoutFeedback>
   );
 }
+
 
 const styles = StyleSheet.create({
   input: {
