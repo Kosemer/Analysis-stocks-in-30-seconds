@@ -99,6 +99,21 @@ export async function fetchStockData(ticker) {
     }
     const volumeRaw = typeof quote.volume === "number" ? quote.volume : "n.a.";
     const volume = volumeRaw !== "n.a." ? formatVolume(volumeRaw) : "n.a.";
+
+        // 6. Historical napi adatok az elmúlt 50 napra (volume számításhoz)
+        const histRes = await fetch(`${BASE_URL_FMP}/historical-chart/1day/${ticker}?apikey=${API_KEY}`);
+        const histData = await histRes.json();
+        const volume50Days = histData
+          .slice(0, 50) // legutóbbi 50 nap
+          .map(day => day.volume)
+          .filter(v => typeof v === "number");
+        
+        const avgVolume50 = volume50Days.length > 0
+          ? volume50Days.reduce((sum, v) => sum + v, 0) / volume50Days.length
+          : "n.a.";
+    
+        console.log("50 napos átlagos volumen:", avgVolume50);
+    
         
 
     // Shares outstanding
@@ -127,7 +142,7 @@ export async function fetchStockData(ticker) {
       roe5Y,
       quickRatio,
       volume,
-
+      avgVolume50,
       revenueGrowthByYear,
       isRevenueGrowing10Percent,
     };

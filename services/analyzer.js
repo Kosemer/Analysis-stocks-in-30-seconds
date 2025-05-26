@@ -6,5 +6,6 @@ export function analyzeStock(data) {
     roe5Y: { value: data.roe5Y, passed: data.roe5Y > 10 },
     quickRatio: { value: data.quickRatio, passed: data.quickRatio > 1 },
     volume: { value: data.volume, passed: data.volume > 1_000_000 },
+    avgVolume50: data.avgVolume50,
   };
 }
