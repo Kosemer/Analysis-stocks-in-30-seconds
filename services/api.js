@@ -78,10 +78,20 @@ export async function fetchStockData(ticker) {
     let quickRatio = "n.a.";
     if (balanceData.length > 0) {
       const bs = balanceData[0];
-      const currentAssets = bs.cashAndCashEquivalents + (bs.marketableSecurities || 0) + (bs.accountsReceivable || 0);
-      const currentLiabilities = bs.currentLiabilities || 1; // elkerüljük a nullával osztást
-      quickRatio = (currentAssets / currentLiabilities).toFixed(2);
+      const cash = bs.cashAndCashEquivalents || 0;
+      const marketableSecurities = bs.shortTermInvestments || 0;
+      const receivables = bs.netReceivables || 0;
+      const currentLiabilities = bs.totalCurrentLiabilities || 0;
+    
+      if (currentLiabilities > 0) {
+        const quickAssets = cash + marketableSecurities + receivables;
+        quickRatio = (quickAssets / currentLiabilities).toFixed(2);
+        console.log("Quick Ratio (arány):", quickRatio);
+      } else {
+        console.warn("⚠️ A current liabilities értéke nulla vagy hiányzik. Quick Ratio nem számítható.");
+      }
     }
+    
 
     // Volume az aktuális árfolyam adatból
     function formatVolume(volume) {
