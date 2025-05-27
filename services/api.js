@@ -4,37 +4,54 @@ const BASE_URL_FMP = "https://financialmodelingprep.com/api/v3";
 export async function fetchStockData(ticker) {
   try {
     // 1. Profiladatok (pl. sharesOutstanding)
-    const profileRes = await fetch(`${BASE_URL_FMP}/profile/${ticker}?apikey=${API_KEY}`);
+    const profileRes = await fetch(
+      `${BASE_URL_FMP}/profile/${ticker}?apikey=${API_KEY}`
+    );
     const profileData = await profileRes.json();
     const profile = profileData[0] || {};
 
     // 2. Aktuális ár és egyéb árfolyamadatok
-    const quoteRes = await fetch(`${BASE_URL_FMP}/quote/${ticker}?apikey=${API_KEY}`);
+    const quoteRes = await fetch(
+      `${BASE_URL_FMP}/quote/${ticker}?apikey=${API_KEY}`
+    );
     const quoteData = await quoteRes.json();
     const quote = quoteData[0] || {};
 
     // 3. Income Statement (bevétel, profit növekedéshez)
-    const incomeRes = await fetch(`${BASE_URL_FMP}/income-statement/${ticker}?limit=5&apikey=${API_KEY}`);
+    const incomeRes = await fetch(
+      `${BASE_URL_FMP}/income-statement/${ticker}?limit=5&apikey=${API_KEY}`
+    );
     const incomeData = await incomeRes.json();
 
     // 4. Key Metrics (pl. EPS growth, PE, PEG, ROE)
-    const metricsRes = await fetch(`${BASE_URL_FMP}/key-metrics-ttm/${ticker}?limit=5&apikey=${API_KEY}`);
+    const metricsRes = await fetch(
+      `${BASE_URL_FMP}/key-metrics-ttm/${ticker}?limit=5&apikey=${API_KEY}`
+    );
     const metricsData = await metricsRes.json();
 
     // 5. Balance Sheet (pl. quick ratio)
-    const balanceRes = await fetch(`${BASE_URL_FMP}/balance-sheet-statement/${ticker}?limit=5&apikey=${API_KEY}`);
+    const balanceRes = await fetch(
+      `${BASE_URL_FMP}/balance-sheet-statement/${ticker}?limit=5&apikey=${API_KEY}`
+    );
     const balanceData = await balanceRes.json();
 
-    console.log("Key Metrics TTM adat:", metricsData);
+    // 6. Ratios TTM (PEG mutatóhoz)
+    const ratiosRes = await fetch(
+      `${BASE_URL_FMP}/ratios-ttm/${ticker}?apikey=${API_KEY}`
+    );
+    const ratiosData = await ratiosRes.json();
+    console.log("Ratios TTM adat:", ratiosData);
 
     // --- Feldolgozás ---
 
     // Bevételnövekedés számítása (az éves jelentésekből)
-    const annualIncome = incomeData.filter(item => item.period === "FY").slice(0, 4);
+    const annualIncome = incomeData
+      .filter((item) => item.period === "FY")
+      .slice(0, 4);
     let revenueGrowthRates = [];
     let revenueGrowthByYear = [];
     if (annualIncome.length >= 2) {
-      const revenues = annualIncome.map(r => ({
+      const revenues = annualIncome.map((r) => ({
         year: parseInt(r.calendarYear),
         value: r.revenue || 0,
       }));
@@ -50,28 +67,37 @@ export async function fetchStockData(ticker) {
         });
       }
     }
-    const isRevenueGrowing10Percent = revenueGrowthRates.length > 0 ? revenueGrowthRates.every(g => g >= 0.10) : "n.a.";
+    const isRevenueGrowing10Percent =
+      revenueGrowthRates.length > 0
+        ? revenueGrowthRates.every((g) => g >= 0.1)
+        : "n.a.";
 
     // EPS növekedés (TTM alapján, key metrics-ből)
     // A legfrissebb key metric elem EPS növekedését vesszük
-    const profitGrowth = (metricsData.length > 0 && typeof metricsData[0].epsGrowthTTM === "number")
-      ? metricsData[0].epsGrowthTTM
-      : "n.a.";
+    const profitGrowth =
+      metricsData.length > 0 && typeof metricsData[0].epsGrowthTTM === "number"
+        ? metricsData[0].epsGrowthTTM
+        : "n.a.";
 
     // PE, PEG, ROE szintén key metrics legfrissebb eleméből
-    const peRatio = metricsData[0]?.peRatioTTM != null
-    ? metricsData[0].peRatioTTM.toFixed(2)
-    : "n.a.";
-  
-  const roe5Y = metricsData[0]?.roeTTM != null
-    ? (metricsData[0].roeTTM * 100).toFixed(2) + "%"
-    : "n.a.";
+    const peRatio =
+      metricsData[0]?.peRatioTTM != null
+        ? metricsData[0].peRatioTTM.toFixed(2)
+        : "n.a.";
 
-    const pegRatio = metricsData[0]?.pegRatioTTM != null
-    ? ratiosData[0].pegRatioTTM.toFixed(2)
-    : "n.a.";
-    
-  
+    const roe5Y =
+      metricsData[0]?.roeTTM != null
+        ? (metricsData[0].roeTTM * 100).toFixed(2) + "%"
+        : "n.a.";
+
+    const pegRatio =
+      ratiosData.length > 0 &&
+      typeof ratiosData[0].priceEarningsToGrowthRatioTTM === "number"
+        ? ratiosData[0].priceEarningsToGrowthRatioTTM.toFixed(2)
+        : "n.a.";
+
+        console.log("PEG TTM (API - ratios-ttm):", pegRatio);
+
 
     // Quick ratio a legfrissebb balance sheet adatból:
     // quickRatio = (Cash + Marketable Securities + Receivables) / Current Liabilities
@@ -82,21 +108,22 @@ export async function fetchStockData(ticker) {
       const marketableSecurities = bs.shortTermInvestments || 0;
       const receivables = bs.netReceivables || 0;
       const currentLiabilities = bs.totalCurrentLiabilities || 0;
-    
+
       if (currentLiabilities > 0) {
         const quickAssets = cash + marketableSecurities + receivables;
         quickRatio = (quickAssets / currentLiabilities).toFixed(2);
         console.log("Quick Ratio (arány):", quickRatio);
       } else {
-        console.warn("⚠️ A current liabilities értéke nulla vagy hiányzik. Quick Ratio nem számítható.");
+        console.warn(
+          "⚠️ A current liabilities értéke nulla vagy hiányzik. Quick Ratio nem számítható."
+        );
       }
     }
-    
 
     // Volume az aktuális árfolyam adatból
     function formatVolume(volume) {
       if (typeof volume !== "number") return "n.a.";
-    
+
       if (volume >= 1e9) {
         return (volume / 1e9).toFixed(2) + "B darab";
       } else if (volume >= 1e6) {
@@ -110,21 +137,22 @@ export async function fetchStockData(ticker) {
     const volumeRaw = typeof quote.volume === "number" ? quote.volume : "n.a.";
     const volume = volumeRaw !== "n.a." ? formatVolume(volumeRaw) : "n.a.";
 
-        // 6. Historical napi adatok az elmúlt 50 napra (volume számításhoz)
-        const histRes = await fetch(`${BASE_URL_FMP}/historical-chart/1day/${ticker}?apikey=${API_KEY}`);
-        const histData = await histRes.json();
-        const volume50Days = histData
-          .slice(0, 50) // legutóbbi 50 nap
-          .map(day => day.volume)
-          .filter(v => typeof v === "number");
-        
-        const avgVolume50 = volume50Days.length > 0
-          ? volume50Days.reduce((sum, v) => sum + v, 0) / volume50Days.length
-          : "n.a.";
-    
-        console.log("50 napos átlagos volumen:", avgVolume50);
-    
-        
+    // 6. Historical napi adatok az elmúlt 50 napra (volume számításhoz)
+    const histRes = await fetch(
+      `${BASE_URL_FMP}/historical-chart/1day/${ticker}?apikey=${API_KEY}`
+    );
+    const histData = await histRes.json();
+    const volume50Days = histData
+      .slice(0, 50) // legutóbbi 50 nap
+      .map((day) => day.volume)
+      .filter((v) => typeof v === "number");
+
+    const avgVolume50 =
+      volume50Days.length > 0
+        ? volume50Days.reduce((sum, v) => sum + v, 0) / volume50Days.length
+        : "n.a.";
+
+    console.log("50 napos átlagos volumen:", avgVolume50);
 
     // Shares outstanding
     const sharesOutstanding = profile.sharesOutstanding || 0;
@@ -156,7 +184,6 @@ export async function fetchStockData(ticker) {
       revenueGrowthByYear,
       isRevenueGrowing10Percent,
     };
-
   } catch (error) {
     console.error("API hiba:", error);
     throw new Error("API hiba: " + error.message);
