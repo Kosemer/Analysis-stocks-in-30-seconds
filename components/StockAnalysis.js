@@ -18,24 +18,23 @@ export default function StockAnalysis({ analysis }) {
         const value = isObject && "value" in result ? result.value : result;
         const passed = isObject && "passed" in result ? result.passed : null;
 
-
         // Külön kezelés a volume + avgVolume50 esetére
         if (label === "volume") {
-            return (
-              <View key="volume" style={{ marginBottom: 10 }}>
-                <Text style={styles.subtitle}>📊 Volume/Forgalom</Text>
-                <Text style={styles.item}>
-                  Forgalom (napi): {value}
-                  {"\n"}
-                  50 napos átlag:{" "}
-                  {typeof analysis.avgVolume50 === "number" && !isNaN(analysis.avgVolume50)
-                    ? (analysis.avgVolume50 / 1e6).toFixed(2) + "M darab"
-                    : "n.a."}
-                </Text>
-              </View>
-            );
-          }
-          
+          return (
+            <View key="volume" style={{ marginBottom: 10 }}>
+              <Text style={styles.subtitle}>📊 Volume/Forgalom</Text>
+              <Text style={styles.item}>
+                Forgalom (napi): {value}
+                {"\n"}
+                50 napos átlag:{" "}
+                {typeof analysis.avgVolume50 === "number" &&
+                !isNaN(analysis.avgVolume50)
+                  ? (analysis.avgVolume50 / 1e6).toFixed(2) + "M darab"
+                  : "n.a."}
+              </Text>
+            </View>
+          );
+        }
 
         // Ne jelenítsük meg külön újra avgVolume50-et
         if (label === "avgVolume50") return null;
@@ -47,6 +46,14 @@ export default function StockAnalysis({ analysis }) {
           </Text>
         );
       })}
+
+      {/* Quick Ratio külön blokk */}
+      {analysis.quickRatio && (
+        <View style={styles.quickRatioContainer}>
+          <Text style={styles.subtitle}>⚡ Quick Ratio</Text>
+          <Text style={styles.item}>{analysis.quickRatio}</Text>
+        </View>
+      )}
 
       {/* Éves bevételnövekedések megjelenítése */}
       {analysis.revenueGrowthByYear && (
