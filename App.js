@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Button, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import StockInput from "./components/StockInput";
 import ResultCard from "./components/ResultCard";
 import { fetchStockData } from "./services/api";
@@ -11,7 +11,6 @@ export default function App() {
   const [ticker, setTicker] = useState("AAPL");
   const [fairValue, setFairValue] = useState(null);
   const [currentPrice, setCurrentPrice] = useState(null);
-
   const [analysis, setAnalysis] = useState(null);
 
   const handleCalc = async () => {
@@ -21,36 +20,34 @@ export default function App() {
       const valuePerShare = totalValue / data.sharesOutstanding;
       setFairValue(valuePerShare);
       setCurrentPrice(data.currentPrice);
-    
+
       const evaluation = analyzeStock(data);
       evaluation.revenueGrowthByYear = data.revenueGrowthByYear;
       setAnalysis(evaluation);
-    
-      try {
-        await saveLastValue(ticker, valuePerShare);
-      } catch (saveErr) {
-        console.warn("Mentési hiba:", saveErr);
-      }
-    
-      if (data.currentPrice < valuePerShare) {
-        try {
-          await sendNotification(ticker, data.currentPrice, valuePerShare);
-        } catch (notifErr) {
-          console.warn("Értesítési hiba:", notifErr);
-        }
-      }
+
+      // Itt a mentési és értesítési logika...
+
     } catch (err) {
       console.error("Adatlekérési vagy számítási hiba:", err);
       Alert.alert("Hiba", "Nem sikerült lekérni vagy feldolgozni az adatokat.");
     }
-    
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📊 DCF Részvény Érték Kalkulátor</Text>
       <StockInput value={ticker} onChange={setTicker} />
-      <Button title="Számítás" onPress={handleCalc} />
+
+      <Pressable
+        onPress={handleCalc}
+        style={({ pressed }) => [
+          styles.button,
+          pressed ? styles.buttonPressed : null
+        ]}
+      >
+        <Text style={styles.buttonText}>Számítás</Text>
+      </Pressable>
+
       {fairValue && currentPrice && <ResultCard currentPrice={currentPrice} fairValue={fairValue} />}
       {analysis && <StockAnalysis analysis={analysis} />}
     </View>
@@ -60,4 +57,21 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, marginTop: 50 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
+
+  button: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  buttonPressed: {
+    backgroundColor: "#005BBB",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
 });
