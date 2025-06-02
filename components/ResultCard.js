@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
 export default function ResultCard({ currentPrice, fairValue }) {
   const status =
@@ -27,11 +27,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 1,
-    alignItems: "center",
-    marginTop: 20,
   },
   item: {
     fontSize: 16,
     marginBottom: 6,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });

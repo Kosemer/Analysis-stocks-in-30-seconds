@@ -47,8 +47,6 @@ export default function App() {
       >
         <Text style={styles.buttonText}>Számítás</Text>
       </Pressable>
-
-      {fairValue && currentPrice && <ResultCard currentPrice={currentPrice} fairValue={fairValue} />}
       {analysis && <StockAnalysis analysis={analysis} />}
     </View>
   );

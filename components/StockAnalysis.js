@@ -7,6 +7,7 @@ import {
   Pressable,
   Animated,
 } from "react-native";
+import ResultCard from "./ResultCard";
 
 // 🔽 Dinamikus magasság animációval rendelkező komponens
 const AnimatedExpandable = ({ expanded, children }) => {
@@ -43,7 +44,7 @@ const AnimatedExpandable = ({ expanded, children }) => {
 
 export default function StockAnalysis({ analysis }) {
   const [expandedCards, setExpandedCards] = useState({});
-
+  console.log("ROE (5Y):", analysis.roe5Y);
   const toggleCard = (key) => {
     setExpandedCards((prev) => ({
       ...prev,
@@ -54,11 +55,14 @@ export default function StockAnalysis({ analysis }) {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+        {analysis.currentPrice && (
+          <ResultCard currentPrice={analysis.currentPrice} fairValue={150.0} />
+        )}
         <Text style={styles.title}>📋 Elemzés eredménye</Text>
 
         {analysis.volume && (
           <Pressable onPress={() => toggleCard("volume")} style={styles.card}>
-            <Text style={styles.subtitle}>📊 Volume/Forgalom</Text>
+            <Text style={styles.subtitle}>📊 Volume (Forgalom)</Text>
             <Text style={styles.item}>
               Forgalom (napi): {analysis.volume?.value ?? analysis.volume}
               {"\n"}
@@ -70,13 +74,8 @@ export default function StockAnalysis({ analysis }) {
 
             <AnimatedExpandable expanded={expandedCards["volume"]}>
               <Text style={styles.expandedText}>
-                Ez a rész dinamikusan lenyílik és bármilyen hosszúságú szöveget
-                tartalmazhat.{"\n"}Például: részletes magyarázat, extra adatok,
-                stb.Ez a rész dinamikusan lenyílik és bármilyen hosszúságú szöveget
-                tartalmazhat.{"\n"}Például: részletes magyarázat, extra adatok,
-                stb.Ez a rész dinamikusan lenyílik és bármilyen hosszúságú szöveget
-                tartalmazhat.{"\n"}Például: részletes magyarázat, extra adatok,
-                stb.
+                Az adott részvényből hány darabot adtak-vettek egy nap alatt.
+                {"\n"} ➡️ Minél nagyobb, annál aktívabb a kereskedés.
               </Text>
             </AnimatedExpandable>
           </Pressable>
@@ -98,8 +97,9 @@ export default function StockAnalysis({ analysis }) {
                 expanded={expandedCards["revenueGrowthByYear"]}
               >
                 <Text style={styles.expandedText}>
-                  Itt lehet részletes elemzést megjeleníteni a bevétel
-                  változásáról, például okokat, hatásokat, stb.
+                  A cég bevétele (árbevétele) mennyivel nőtt az előző évhez
+                  képest, százalékosan.
+                  {"\n"}➡️ Jelzi, hogy nő-e a cég üzlete.
                 </Text>
               </AnimatedExpandable>
             </Pressable>
@@ -116,19 +116,22 @@ export default function StockAnalysis({ analysis }) {
                 onPress={() => toggleCard("quickRatio")}
                 style={styles.card}
               >
-                <Text style={styles.subtitle}>⚖️ Quick Ratio</Text>
+                <Text style={styles.subtitle}>
+                  ⚖️ Quick ratio (Gyors likviditási mutató)
+                </Text>
                 <Text style={styles.item}>
                   {analysis.quickRatio?.value ?? analysis.quickRatio}{" "}
                   {analysis.quickRatio?.passed === true
                     ? "✅"
                     : analysis.quickRatio?.passed === false
-                    ? "❌"
+                    ? "❌\n❗Likviditási problémák\nEz azt jelenti, hogy a cégnek nehézségei lehetnek a rövid távú kötelezettségeinek teljesítésében (például számlák, hitelek kifizetése)."
                     : ""}
                 </Text>
                 <AnimatedExpandable expanded={expandedCards["quickRatio"]}>
                   <Text style={styles.expandedText}>
-                    A Quick Ratio azt mutatja meg, hogy a cég rövid távon mennyire
-                    likvid.{"\n"}Ha 1 felett van, az általában pozitív jel.
+                    Megmutatja, hogy a cég gyorsan elérhető pénzből (készpénz,
+                    követelés stb.) ki tudja-e fizetni rövid távú tartozásait.
+                    {"\n"}➡️ 1 felett jó, mert a cég nem szorul rá eladásra.
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
@@ -145,13 +148,14 @@ export default function StockAnalysis({ analysis }) {
                   {analysis.roe5Y?.passed === true
                     ? "✅"
                     : analysis.roe5Y?.passed === false
-                    ? "❌"
+                    ? "❌\n❗Gyenge jövedelmezőség\nA gyenge jövedelmezőség arra utal, hogy a cég működése nem elég nyereséges, így nem biztos, hogy jó befektetés hosszú távon."
                     : ""}
                 </Text>
                 <AnimatedExpandable expanded={expandedCards["roe5Y"]}>
                   <Text style={styles.expandedText}>
-                    A ROE (Return on Equity) megmutatja, hogy a cég mennyire
-                    hatékonyan használja a saját tőkét profittermelésre.
+                    cég mennyi nyereséget termel a részvényesek pénzéhez képest.
+                    {"\n"}➡️ Minél magasabb, annál hatékonyabban dolgozik a cég
+                    a befektetők pénzével.
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
@@ -168,13 +172,15 @@ export default function StockAnalysis({ analysis }) {
                   {analysis.pegRatio?.passed === true
                     ? "✅"
                     : analysis.pegRatio?.passed === false
-                    ? "❌"
+                    ? "❌\n❗Alacsony nyereségnövekedés\nA cég profitja lassan vagy alig nő évről évre.\nEz a mutató inkább csak tájékoztató jellegű, nem lehet teljesen pontosat számolni❗"
                     : ""}
                 </Text>
                 <AnimatedExpandable expanded={expandedCards["pegRatio"]}>
                   <Text style={styles.expandedText}>
-                    A PEG Ratio a P/E arányt hasonlítja a növekedési ütemhez.
-                    Általában 1 alatti érték kedvezőnek számít.
+                    Azt mutatja meg, hogy a cég P/E aránya (ára a nyereségéhez
+                    képest) mennyire indokolt a várható növekedés alapján.
+                    {"\n"}➡️ 1 körül jó, ha 1-nél kisebb, akkor olcsónak számít
+                    a részvény.
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
@@ -191,13 +197,16 @@ export default function StockAnalysis({ analysis }) {
                   {analysis.peRatio?.passed === true
                     ? "✅"
                     : analysis.peRatio?.passed === false
-                    ? "❌"
+                    ? "❌\n❗Valószínűleg túlértékelt\nA részvény ára magasabb, mint amit a cég teljesítménye indokol."
                     : ""}
                 </Text>
                 <AnimatedExpandable expanded={expandedCards["peRatio"]}>
                   <Text style={styles.expandedText}>
-                    A Price/Earnings mutató a részvény árát hasonlítja a cég
-                    egy részvényre jutó profitjához.
+                    Price to Earnings – Ár/nyereség arány{"\n"}A részvény ára
+                    hányszorosát éri a cég egy részvényre jutó éves
+                    nyereségének.
+                    {"\n"}➡️ Magas: drága, alacsony: olcsóbb – de függ a
+                    növekedési kilátásoktól is.
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
