@@ -35,7 +35,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📊 DCF Részvény Érték Kalkulátor</Text>
+      <Text style={styles.title}>📊 Részvény analizáló</Text>
       <StockInput value={ticker} onChange={setTicker} />
 
       <Pressable

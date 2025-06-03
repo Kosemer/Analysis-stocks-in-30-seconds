@@ -74,8 +74,13 @@ export async function fetchStockData(ticker) {
     // PEG ráta számítása manuálisan (ha adatok elérhetők)
     let pegRatio = "n.a.";
     if (typeof peRatioRaw === "number" && typeof profitGrowthRaw === "number" && profitGrowthRaw !== 0) {
-      pegRatio = (peRatioRaw / (profitGrowthRaw * 100)).toFixed(2);
+      pegRatio = (peRatioRaw / profitGrowthRaw).toFixed(2);
     }
+
+    console.log("P/E:", peRatioRaw);
+    console.log("EPS growth raw:", profitGrowthRaw);
+    console.log("PEG számítás helyesen:", peRatioRaw / profitGrowthRaw);
+    
 
     // Quick ratio számítása
     let quickRatio = "n.a.";

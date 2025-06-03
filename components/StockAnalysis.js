@@ -44,7 +44,7 @@ const AnimatedExpandable = ({ expanded, children }) => {
 
 export default function StockAnalysis({ analysis }) {
   const [expandedCards, setExpandedCards] = useState({});
-  console.log("ROE (5Y):", analysis.roe5Y);
+
   const toggleCard = (key) => {
     setExpandedCards((prev) => ({
       ...prev,
@@ -88,11 +88,21 @@ export default function StockAnalysis({ analysis }) {
               style={styles.card}
             >
               <Text style={styles.subtitle}>📈 Éves bevételnövekedések:</Text>
-              {analysis.revenueGrowthByYear.map((entry) => (
-                <Text key={entry.year} style={styles.item}>
-                  {entry.year}: {entry.growthPercent}
-                </Text>
-              ))}
+              {analysis.revenueGrowthByYear.map((entry) => {
+                const parsedGrowth = parseFloat(
+                  entry.growthPercent.replace("%", "")
+                );
+                const passed = parsedGrowth > 10;
+                return (
+                  <Text key={entry.year} style={styles.item}>
+                    {entry.year}: {entry.growthPercent}{" "}
+                    {passed
+                      ? "✅"
+                      : "❌\n❗Növekedés hiánya\nEz azt jelzi, hogy a vállalat bevétele nem nőtt megfelelő ütemben, ami hosszabb távon gondot jelenthet."}
+                  </Text>
+                );
+              })}
+
               <AnimatedExpandable
                 expanded={expandedCards["revenueGrowthByYear"]}
               >
