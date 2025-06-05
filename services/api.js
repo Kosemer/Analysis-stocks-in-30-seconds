@@ -75,25 +75,6 @@ export async function fetchStockData(ticker) {
     );
     const metricsDataCurrentRatio = await metricsResCurrentRatio.json();
 
-//ROE
-    const roeRes = await fetch(
-      `${BASE_URL_FMP}/key-metrics/${ticker}?limit=5&apikey=${API_KEY}`
-    );
-    const roeData = await roeRes.json();
-
-    const roeValues = roeData
-      .filter((item) => typeof item.returnOnEquity === "number")
-      .map((item) => item.returnOnEquity);
-
-    const roeAverage =
-      roeValues.length > 0
-        ? roeValues.reduce((sum, val) => sum + val, 0) / roeValues.length
-        : null;
-
-    const isROEAbove5Percent =
-      roeAverage != null ? roeAverage * 100 > 5 : "n.a.";
-//ROE
-
     const currentRatio =
       metricsDataCurrentRatio[0]?.currentRatio != null
         ? metricsDataCurrentRatio[0].currentRatio.toFixed(2)
@@ -149,6 +130,23 @@ export async function fetchStockData(ticker) {
       metricsData[0]?.roeTTM != null
         ? (metricsData[0].roeTTM * 100).toFixed(2) + "%"
         : "n.a.";
+
+        console.log("metricsDataCurrentRatio:", metricsDataCurrentRatio);
+
+
+    // ROE 5 éves átlag (éves key-metrics alapján)
+    const roe5YArray = metricsDataCurrentRatio
+      .filter((m) => typeof m.returnOnEquity === "number")
+      .map((m) => m.returnOnEquity);
+
+    const roe5YAvg =
+      roe5YArray.length > 0
+        ? (
+            roe5YArray.reduce((sum, val) => sum + val, 0) / roe5YArray.length
+          ).toFixed(2) + "%"
+        : "n.a.";
+
+    console.log("ROE (5Y átlag):", roe5YAvg);
 
     // EPS növekedés (financial-growth végpontból)
     const profitGrowthRaw =
@@ -227,6 +225,7 @@ export async function fetchStockData(ticker) {
       peRatio,
       pegRatio,
       roe5Y,
+      roe5YAvg,
       quickRatio,
       quickRatioTTM,
       volume,
@@ -234,8 +233,6 @@ export async function fetchStockData(ticker) {
       revenueGrowthByYear,
       isRevenueGrowing10Percent,
       currentRatio,
-      roeAverage: roeAverage != null ? (roeAverage * 100).toFixed(2) + "%" : "n.a.",
-      isROEAbove5Percent,
     };
   } catch (error) {
     console.error("API hiba:", error);

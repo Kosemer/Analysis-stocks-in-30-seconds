@@ -270,6 +270,7 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
+            
 
             {analysis.roe5Y !== undefined && (
               <Pressable

@@ -5,13 +5,13 @@ export function analyzeStock(data) {
     pegRatio: { value: data.pegRatio, passed: data.pegRatio < 2 },
     roe5Y: { value: data.roe5Y, passed: data.roe5Y > 10 },
     quickRatio: {
-      value: data.quickRatio,
-      passed: data.quickRatio >= 0.7 && data.quickRatio <= 1,
+      value: parseFloat(data.quickRatio),
+      passed: parseFloat(data.quickRatio) >= 0.7 && parseFloat(data.quickRatio) < 2,
     },
     quickRatioTTM: {
-      value: data.quickRatioTTM,
-      passed: data.quickRatioTTM >= 0.7 && data.quickRatioTTM <= 1,
-    },
+      value: parseFloat(data.quickRatioTTM),
+      passed: parseFloat(data.quickRatio) >= 0.7 && parseFloat(data.quickRatio) < 2,
+    },    
     currentRatio: {
       value: data.currentRatio,
       passed: data.currentRatio >= 1 && data.currentRatio <= 2,
