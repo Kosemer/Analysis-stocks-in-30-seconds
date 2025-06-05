@@ -1,9 +1,25 @@
 export function analyzeStock(data) {
+    // Az elmúlt 5 év ROE értékei (pl. 1.65 = 165%)
+    const roeValues = (data.roeList || [])
+    .slice(0, 5)
+    .map(entry => {
+      const val = typeof entry.roe === "string" ? parseFloat(entry.roe) : entry.roe;
+      return isNaN(val) ? 0 : val * 100; // Itt szorozzuk fel százalékká!
+    });
+  
+  const roeAvg = roeValues.length > 0
+    ? roeValues.reduce((sum, v) => sum + v, 0) / roeValues.length
+    : 0;
+    
   const result = {
     profitGrowth: { value: data.profitGrowth, passed: data.profitGrowth > 0 },
     peRatio: { value: data.peRatio, passed: data.peRatio < 25 },
     pegRatio: { value: data.pegRatio, passed: data.pegRatio < 2 },
-    roe5Y: { value: data.roe5Y, passed: data.roe5Y > 10 },
+    roe5Y: { 
+      value: roeAvg, 
+      passed: roeAvg > 5  // mert az értékek 100-szorosak a valódi %-hoz képest
+    },
+    roeList: data.roeList,
     quickRatio: {
       value: parseFloat(data.quickRatio),
       passed: parseFloat(data.quickRatio) >= 0.7 && parseFloat(data.quickRatio) < 2,
@@ -44,6 +60,6 @@ export function analyzeStock(data) {
     },
     /* Éves bevételnövekedés ellenőrzése */
   };
-
+console.log("222222222222" , data.roeList)
   return result;
 }

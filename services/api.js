@@ -1,5 +1,6 @@
 // --- Konstansok ---
-const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
+//const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
+const API_KEY = "kCkgQOjqMBI4Jhkchxn5FsJOQiNulc7Q ";
 const BASE_URL_FMP = "https://financialmodelingprep.com/api/v3";
 
 // --- Fő adatlekérő függvény ---
@@ -148,6 +149,18 @@ export async function fetchStockData(ticker) {
 
     console.log("ROE (5Y átlag):", roe5YAvg);
 
+    // ROE lekérése (returnOnEquity)
+    const roeList = metricsDataCurrentRatio.map((entry, index) => {
+      const year = entry.calendarYear || `#${index + 1}`;
+      const roeRaw = entry.roe;
+      const roe = typeof roeRaw === "number" ? roeRaw.toFixed(2) : "n.a.";
+      return { year, roe };
+    });
+    
+    
+    
+    
+  
     // EPS növekedés (financial-growth végpontból)
     const profitGrowthRaw =
       growthData.length > 0 && typeof growthData[0].epsgrowth === "number"
@@ -233,6 +246,7 @@ export async function fetchStockData(ticker) {
       revenueGrowthByYear,
       isRevenueGrowing10Percent,
       currentRatio,
+      roeList
     };
   } catch (error) {
     console.error("API hiba:", error);

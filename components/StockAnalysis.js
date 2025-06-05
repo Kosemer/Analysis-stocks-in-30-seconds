@@ -270,7 +270,42 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
-            
+
+            {analysis.roeList && Array.isArray(analysis.roeList) && (
+  <Pressable
+    onPress={() => toggleCard("roeList")}
+    style={styles.card}
+  >
+    <Text style={styles.subtitle}>💹 ROE Lista (Évek szerint)</Text>
+
+    {analysis.roeList.map((entry) => (
+      <Text key={entry.year} style={styles.item}>
+        {entry.year}: {(parseFloat(entry.roe) * 100).toFixed(2)}%
+      </Text>
+    ))}
+
+    {/* Pipa vagy kereszt az átlagos ROE alapján */}
+    <Text style={styles.statusIcon}>
+      {analysis.roe5Y?.passed ? "✅" : "❌"}
+    </Text>
+
+    {/* Átlagos ROE érték kiírása */}
+    <Text style={styles.averageText}>
+      Átlagos ROE (5 év): {analysis.roe5Y?.value?.toFixed(2)}%
+    </Text>
+
+    <AnimatedExpandable expanded={expandedCards["roeList"]}>
+      <Text style={styles.expandedText}>
+        A Return on Equity (ROE) azt mutatja meg, hogy a vállalat
+        mennyi nyereséget termel a részvényesek által befektetett
+        tőkéhez képest.
+        {"\n"}➡️ Minél magasabb az érték, annál hatékonyabban
+        használja a vállalat a tőkét.
+      </Text>
+    </AnimatedExpandable>
+  </Pressable>
+)}
+
 
             {analysis.roe5Y !== undefined && (
               <Pressable
@@ -295,7 +330,6 @@ export default function StockAnalysis({ analysis }) {
                 </AnimatedExpandable>
               </Pressable>
             )}
-            
 
             {analysis.pegRatio !== undefined && (
               <Pressable
