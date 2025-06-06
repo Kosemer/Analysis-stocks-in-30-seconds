@@ -13,8 +13,8 @@ export function analyzeStock(data) {
     
   const result = {
     profitGrowth: { value: data.profitGrowth, passed: data.profitGrowth > 0 },
-    peRatio: { value: data.peRatio, passed: data.peRatio < 25 },
-    pegRatio: { value: data.pegRatio, passed: data.pegRatio < 2 },
+    peRatioFromRatios: { value: data.peRatioFromRatios, passed: data.peRatioFromRatios < 25 },
+    pegRatioFromRatios: { value: data.pegRatioFromRatios, passed: data.pegRatioFromRatios < 2 },
     roe5Y: { 
       value: roeAvg, 
       passed: roeAvg > 5  // mert az értékek 100-szorosak a valódi %-hoz képest
@@ -40,14 +40,6 @@ export function analyzeStock(data) {
     revenueGrowthByYear: data.revenueGrowthByYear.map((entry) => {
       const numericGrowth = parseFloat(entry.growthPercent.replace("%", ""));
       const passed = !isNaN(numericGrowth) && numericGrowth > 0;
-      console.log(
-        "Checking year:",
-        entry.year,
-        "Parsed:",
-        numericGrowth,
-        "Passed:",
-        passed
-      );
       return {
         ...entry,
         passed,
@@ -60,6 +52,6 @@ export function analyzeStock(data) {
     },
     /* Éves bevételnövekedés ellenőrzése */
   };
-console.log("222222222222" , data.roeList)
+
   return result;
 }

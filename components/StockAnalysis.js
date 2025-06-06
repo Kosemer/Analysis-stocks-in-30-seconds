@@ -88,41 +88,100 @@ export default function StockAnalysis({ analysis }) {
               onPress={() => toggleCard("revenueGrowthByYear")}
               style={styles.card}
             >
-              <Text style={styles.subtitle}>📈 Éves bevételnövekedések:</Text>
-              {analysis.revenueGrowthByYear.map((entry) => {
-                const parsedGrowth = parseFloat(
-                  entry.growthPercent.replace("%", "")
-                );
-                const passed = parsedGrowth > 10;
-                return (
-                  <Text key={entry.year} style={styles.item}>
-                    {entry.year}: {entry.growthPercent}{" "}
-                    {passed
-                      ? "✅"
-                      : "❌\n❗Növekedés hiánya\nEz azt jelzi, hogy a vállalat bevétele nem nőtt megfelelő ütemben, ami hosszabb távon gondot jelenthet."}
-                  </Text>
-                );
-              })}
+              <Text style={styles.subtitle}>📈 Éves bevételnövekedések</Text>
 
+              {/* Átlagos növekedés sikeresség ikon
+              <Text style={styles.item}>
+                {analysis.revenueGrowth5Y?.passed ? "✅" : "❌"}
+              </Text> */}
+
+              <View style={{ paddingHorizontal: 16 }}>
+                {analysis.revenueGrowthByYear.map((entry) => {
+                  const parsedGrowth = parseFloat(
+                    entry.growthPercent.replace("%", "")
+                  );
+                  const passed = parsedGrowth >= 10;
+                  const colorStyle = passed ? styles.greenText : styles.redText;
+
+                  return (
+                    <View
+                      key={entry.year}
+                      style={{
+                        paddingVertical: 5,
+                        borderBottomWidth: 0.5,
+                        borderColor: "#ccc",
+                      }}
+                    >
+                      <Text style={[styles.item, colorStyle]}>
+                        {entry.year}: {entry.growthPercent}{" "}
+                        {passed ? "✅" : "❌"}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* Átlagos érték (ha van) */}
+              {analysis.revenueGrowth5Y?.value && (
+                <Text
+                  style={[
+                    styles.item,
+                    { fontWeight: "bold" },
+                    analysis.revenueGrowth5Y.value >= 10
+                      ? styles.greenText
+                      : styles.redText,
+                  ]}
+                >
+                  {analysis.revenueGrowth5Y.value.toFixed(2)}%
+                </Text>
+              )}
+
+              {/* Éves bontás táblázatszerűen */}
               <AnimatedExpandable
                 expanded={expandedCards["revenueGrowthByYear"]}
               >
+                {/* Magyarázó szöveg alul */}
                 <Text style={styles.expandedText}>
-                  A cég bevétele (árbevétele) mennyivel nőtt az előző évhez
-                  képest, százalékosan.
-                  {"\n"}➡️ Jelzi, hogy nő-e a cég üzlete.
+                  <Text>
+                    📘{" "}
+                    <Text style={{ fontWeight: "bold" }}>
+                      Bevételnövekedés (Revenue Growth)
+                    </Text>{" "}
+                    azt mutatja, hogy a vállalat árbevétele hogyan változott
+                    évről évre.{"\n"}
+                    {"\n"}
+                    <Text style={styles.greenText}>
+                      Magas növekedés (pl. 10% felett)
+                    </Text>{" "}
+                    {"\n"} A cég üzleti tevékenysége dinamikusan bővül.{"\n"}
+                    {"\n"}
+                    <Text style={styles.redText}>
+                      Alacsony növekedés (pl. 10% alatt)
+                    </Text>{" "}
+                    {"\n"}❗ Növekedés hiánya{"\n"}
+                    Ez azt jelzi, hogy a vállalat bevétele nem nőtt megfelelő
+                    ütemben, ami hosszabb távon gondot jelenthet.{"\n"}
+                    {"\n"}
+                    <Text style={styles.redText}>
+                      Alacsony vagy negatív növekedés
+                    </Text>{" "}
+                    {"\n"} Figyelmeztető jel, mivel a bevétel stagnál vagy
+                    csökken.
+                    {"\n"}
+                  </Text>
                 </Text>
               </AnimatedExpandable>
             </Pressable>
           </View>
         )}
+
         {/*KÉSZ, HELYES ADATOK*/}
 
         {/*KÉSZ, HELYES ADATOK*/}
         {(analysis.quickRatio ||
           analysis.roe5Y ||
-          analysis.pegRatio ||
-          analysis.peRatio) && (
+          analysis.pegRatioFromRatios ||
+          analysis.peRatioFromRatios) && (
           <View style={styles.metricsContainer}>
             {analysis.quickRatio !== undefined && (
               <Pressable
@@ -133,7 +192,15 @@ export default function StockAnalysis({ analysis }) {
                   ⚖️ Quick ratio (Gyors likviditási mutató) Az elmúlt pénzügyi
                   évre vetítve
                 </Text>
-                <Text style={styles.item}>
+
+                <Text
+                  style={[
+                    styles.item,
+                    analysis.quickRatio?.passed === true
+                      ? styles.greenText
+                      : styles.redText,
+                  ]}
+                >
                   {analysis.quickRatio?.value ?? analysis.quickRatio}{" "}
                   {analysis.quickRatio?.passed === true ? "✅" : "❌"}
                 </Text>
@@ -151,22 +218,47 @@ export default function StockAnalysis({ analysis }) {
                     figyelembe.
                     {"\n\n"}❗{" "}
                     <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                      Aktuális értékelés:{"\n"}
+                      Mit jelent az értéke?{"\n"}
                     </Text>
                     {"\n"}
-                    {(() => {
-                      const ratio =
-                        analysis.quickRatio?.value ?? analysis.quickRatio;
-                      if (ratio < 0.7) {
-                        return `0,7 alatt – ❌ Rossz: A vállalatnak nincs elegendő likvid eszköze a rövid távú kötelezettségeinek fedezésére.`;
-                      } else if (ratio >= 0.7 && ratio < 1) {
-                        return `0,7 és 1 között – ⚠️ Elfogadható, de nem túl erős likviditás. Érdemes figyelni a trendet.`;
-                      } else if (ratio >= 2) {
-                        return `2 felett – ❗ Túl magas: Ez azt jelezheti, hogy a vállalat túl sok készpénzt vagy likvid eszközt tart fenn anélkül, hogy azt hatékonyan befektetné.`;
-                      } else {
-                        return `1 felett – ✅ Jó: A vállalatnak elegendő likvid eszköze van a rövid lejáratú kötelezettségeinek fedezésére.`;
-                      }
-                    })()}
+                    <Text style={styles.expandedText}>
+                      <Text style={{ fontWeight: "bold" }}>
+                        Quick Ratio magyarázat:
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.redText}>
+                        0,7 alatt – ❌ Rossz:{" "}
+                        <Text style={styles.defaultText}>
+                          A vállalatnak nincs elegendő likvid eszköze a rövid
+                          távú kötelezettségeinek fedezésére.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.orangeText}>
+                        0,7 és 1 között – ⚠️ Elfogadható:{" "}
+                        <Text style={styles.defaultText}>
+                          de nem túl erős likviditás. Érdemes figyelni a
+                          trendet.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.greenText}>
+                        1 felett – ✅ Jó:{" "}
+                        <Text style={styles.defaultText}>
+                          A vállalatnak elegendő likvid eszköze van a rövid
+                          lejáratú kötelezettségeinek fedezésére.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.warningText}>
+                        2 felett – ❗ Túl magas:{" "}
+                        <Text style={styles.defaultText}>
+                          Ez azt jelezheti, hogy a vállalat túl sok készpénzt
+                          vagy likvid eszközt tart fenn anélkül, hogy azt
+                          hatékonyan befektetné.
+                        </Text>
+                      </Text>
+                    </Text>
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
@@ -183,7 +275,14 @@ export default function StockAnalysis({ analysis }) {
                   📘 Quick Ratio TTM {"\n"}(Gyors likviditási mutató – 12
                   hónapra vetítve)
                 </Text>
-                <Text style={styles.item}>
+                <Text
+                  style={[
+                    styles.item,
+                    analysis.quickRatioTTM?.passed === true
+                      ? styles.greenText
+                      : styles.redText,
+                  ]}
+                >
                   {analysis.quickRatioTTM?.value ?? analysis.quickRatioTTM}{" "}
                   {analysis.quickRatioTTM?.passed === true ? "✅" : "❌"}
                 </Text>
@@ -204,7 +303,8 @@ export default function StockAnalysis({ analysis }) {
                       Aktuális értékelés:{"\n"}
                     </Text>
                     {"\n"}
-                    {(() => {
+                    {/* Szöveg megjelenítése értékelés alapján. */}
+                    {/* {(() => {
                       const ratio =
                         analysis.quickRatioTTM?.value ?? analysis.quickRatioTTM;
                       if (ratio < 0.7) {
@@ -216,7 +316,45 @@ export default function StockAnalysis({ analysis }) {
                       } else {
                         return `1 felett – ✅ Jó: A vállalatnak elegendő likvid eszköze van a rövid lejáratú kötelezettségeinek fedezésére.`;
                       }
-                    })()}
+                    })()}*/}
+                    <Text style={styles.expandedText}>
+                      <Text style={{ fontWeight: "bold" }}>
+                        Quick Ratio (TTM) magyarázat:
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.redText}>
+                        0,7 alatt – ❌ Rossz:{" "}
+                        <Text style={styles.defaultText}>
+                          A vállalatnak nincs elegendő likvid eszköze a rövid
+                          távú kötelezettségeinek fedezésére.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.orangeText}>
+                        0,7 és 1 között – ⚠️ Elfogadható:{" "}
+                        <Text style={styles.defaultText}>
+                          de nem túl erős likviditás. Érdemes figyelni a
+                          trendet.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.greenText}>
+                        1 felett – ✅ Jó:{" "}
+                        <Text style={styles.defaultText}>
+                          A vállalatnak elegendő likvid eszköze van a rövid
+                          lejáratú kötelezettségeinek fedezésére.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+                      <Text style={styles.warningText}>
+                        2 felett – ❗ Túl magas:{" "}
+                        <Text style={styles.defaultText}>
+                          Ez azt jelezheti, hogy a vállalat túl sok készpénzt
+                          vagy likvid eszközt tart fenn anélkül, hogy azt
+                          hatékonyan befektetné.
+                        </Text>
+                      </Text>
+                    </Text>
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
@@ -232,7 +370,14 @@ export default function StockAnalysis({ analysis }) {
                 <Text style={styles.subtitle}>
                   💼 Current Ratio {"\n"}(Rövid távú likviditási mutató)
                 </Text>
-                <Text style={styles.item}>
+                <Text
+                  style={[
+                    styles.item,
+                    analysis.currentRatio?.passed === true
+                      ? styles.greenText
+                      : styles.redText,
+                  ]}
+                >
                   {analysis.currentRatio?.value ?? analysis.currentRatio}{" "}
                   {analysis.currentRatio?.passed === true ? "✅" : "❌"}
                 </Text>
@@ -252,7 +397,7 @@ export default function StockAnalysis({ analysis }) {
                       Aktuális értékelés:{"\n"}
                     </Text>
                     {"\n"}
-                    {(() => {
+                    {/*{(() => {
                       const ratio =
                         analysis.currentRatio?.value ?? analysis.currentRatio;
                       if (ratio < 1) {
@@ -264,88 +409,180 @@ export default function StockAnalysis({ analysis }) {
                       } else {
                         return `A current ratio 1.3 és 2 között van – ez általában pozitív jel, de érdemes összevetni iparági átlagokkal is.`;
                       }
-                    })()}
+                    })()}*/}
+                    <Text style={styles.expandedText}>
+                      <Text style={{ fontWeight: "bold" }}>
+                        Current Ratio magyarázat:
+                      </Text>
+                      {"\n\n"}
+
+                      <Text style={styles.redText}>
+                        1 alatt – ❌ Rossz:{" "}
+                        <Text style={styles.defaultText}>
+                          A vállalatnak több rövid lejáratú kötelezettsége van,
+                          mint forgóeszköze. Ez pénzügyi nehézségekre utalhat,
+                          és azt jelentheti, hogy a cégnek problémái lehetnek a
+                          rövid távú kötelezettségek teljesítésével.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+
+                      <Text style={styles.orangeText}>
+                        1 – 1,3 között – ⚠️ Elfogadható:{" "}
+                        <Text style={styles.defaultText}>
+                          A vállalatnak elegendő forgóeszköze van a rövid
+                          lejáratú kötelezettségek fedezésére, de a mozgástér
+                          szűkebb lehet.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+
+                      <Text style={styles.greenText}>
+                        1,3 – 2 között – ✅ Jó:{" "}
+                        <Text style={styles.defaultText}>
+                          Ez általában pozitív jel, de érdemes összevetni
+                          iparági átlagokkal is.
+                        </Text>
+                      </Text>
+                      {"\n\n"}
+
+                      <Text style={styles.warningText}>
+                        2 felett – ❗ Túl magas:{" "}
+                        <Text style={styles.defaultText}>
+                          Ez azt jelezheti, hogy a vállalat nem használja
+                          hatékonyan az eszközeit, és túl sok készpénzt vagy
+                          készletet tart fenn anélkül, hogy azt befektetné vagy
+                          felhasználná.
+                        </Text>
+                      </Text>
+                    </Text>
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
 
+            {/*KÉSZ, HELYES ADATOK*/}
             {analysis.roeList && Array.isArray(analysis.roeList) && (
-  <Pressable
-    onPress={() => toggleCard("roeList")}
-    style={styles.card}
-  >
-    <Text style={styles.subtitle}>💹 ROE Lista (Évek szerint)</Text>
-
-    {analysis.roeList.map((entry) => (
-      <Text key={entry.year} style={styles.item}>
-        {entry.year}: {(parseFloat(entry.roe) * 100).toFixed(2)}%
-      </Text>
-    ))}
-
-    {/* Pipa vagy kereszt az átlagos ROE alapján */}
-    <Text style={styles.statusIcon}>
-      {analysis.roe5Y?.passed ? "✅" : "❌"}
-    </Text>
-
-    {/* Átlagos ROE érték kiírása */}
-    <Text style={styles.averageText}>
-      Átlagos ROE (5 év): {analysis.roe5Y?.value?.toFixed(2)}%
-    </Text>
-
-    <AnimatedExpandable expanded={expandedCards["roeList"]}>
-      <Text style={styles.expandedText}>
-        A Return on Equity (ROE) azt mutatja meg, hogy a vállalat
-        mennyi nyereséget termel a részvényesek által befektetett
-        tőkéhez képest.
-        {"\n"}➡️ Minél magasabb az érték, annál hatékonyabban
-        használja a vállalat a tőkét.
-      </Text>
-    </AnimatedExpandable>
-  </Pressable>
-)}
-
-
-            {analysis.roe5Y !== undefined && (
               <Pressable
-                onPress={() => toggleCard("roe5Y")}
+                onPress={() => toggleCard("roeList")}
                 style={styles.card}
               >
-                <Text style={styles.subtitle}>💰 ROE (5 év)</Text>
-                <Text style={styles.item}>
-                  {analysis.roe5Y?.value ?? analysis.roe5Y}{" "}
-                  {analysis.roe5Y?.passed === true
-                    ? "✅"
-                    : analysis.roe5Y?.passed === false
-                    ? "❌\n❗Gyenge jövedelmezőség\nA gyenge jövedelmezőség arra utal, hogy a cég működése nem elég nyereséges, így nem biztos, hogy jó befektetés hosszú távon."
-                    : ""}
+                <Text style={styles.subtitle}>
+                  💰 Átlagos ROE (Elmúlt 5 év)
                 </Text>
-                <AnimatedExpandable expanded={expandedCards["roe5Y"]}>
+
+                {/* Pipa vagy kereszt az átlagos ROE alapján */}
+                <Text style={styles.item}>
+                  {analysis.roe5Y?.passed ? "✅" : "❌"}
+                </Text>
+
+                {/* Átlagos ROE érték kiírása */}
+                {/* Átlagos ROE érték kiírása */}
+                <Text
+                  style={[
+                    styles.item,
+                    { fontWeight: "bold" },
+                    analysis.roe5Y?.value >= 0
+                      ? styles.greenText
+                      : styles.redText,
+                  ]}
+                >
+                  {analysis.roe5Y?.value?.toFixed(2)}%
+                </Text>
+
+                <AnimatedExpandable expanded={expandedCards["roeList"]}>
+                  <View style={{ paddingHorizontal: 16 }}>
+                    {analysis.roeList.map((entry) => {
+                      const roeValue = parseFloat(entry.roe) * 100;
+                      const roeColor =
+                        roeValue >= 0 ? styles.greenText : styles.redText;
+
+                      return (
+                        <View
+                          key={entry.year}
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            paddingVertical: 5,
+                            borderBottomWidth: 0.5,
+                            borderColor: "#ccc",
+                          }}
+                        >
+                          <Text style={{ fontWeight: "bold" }}>
+                            {entry.year}
+                          </Text>
+                          <Text style={roeColor}>{roeValue.toFixed(2)}%</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+
                   <Text style={styles.expandedText}>
-                    cég mennyi nyereséget termel a részvényesek pénzéhez képest.
-                    {"\n"}➡️ Minél magasabb, annál hatékonyabban dolgozik a cég
-                    a befektetők pénzével.
+                    <Text>
+                      📘
+                      <Text style={{ fontWeight: "bold" }}>
+                        A ROE (Return on Equity, magyarul saját tőke
+                        megtérülése)
+                      </Text>{" "}
+                      egy pénzügyi mutató, amely azt méri, hogy egy vállalat
+                      mennyire hatékonyan használja fel a saját tőkéjét a
+                      nyereség termelésére.{"\n"}
+                      Minél magasabb az érték, annál hatékonyabban használja a
+                      vállalat a tőkét.{"\n\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Mit jelent az értéke?
+                      </Text>
+                      {"\n"}
+                      {"\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Magas ROE (pl. 15% felett)
+                      </Text>{" "}
+                      {"\n"}A vállalat hatékonyan használja a saját tőkéjét, és
+                      jó megtérülést biztosít a részvényesek számára.{"\n"}
+                      {"\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Alacsony ROE (pl. 10% alatt)
+                      </Text>{" "}
+                      {"\n"} A vállalat kevésbé hatékonyan működik, vagy magas
+                      tőkeigénye van.{"\n"}
+                      {"\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Negatív ROE
+                      </Text>{" "}
+                      {"\n"}A vállalat veszteséges, ami figyelmeztető jel lehet
+                      a befektetők számára.
+                    </Text>
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
             )}
+            {/*KÉSZ, HELYES ADATOK*/}
 
-            {analysis.pegRatio !== undefined && (
+            {analysis.pegRatioFromRatios !== undefined && (
               <Pressable
-                onPress={() => toggleCard("pegRatio")}
+                onPress={() => toggleCard("pegRatioFromRatios")}
                 style={styles.card}
               >
                 <Text style={styles.subtitle}>📉 PEG Ratio</Text>
                 <Text style={styles.item}>
-                  {analysis.pegRatio?.value ?? analysis.pegRatio}{" "}
-                  {analysis.pegRatio?.passed === true
+                  {(analysis.pegRatioFromRatios?.value ??
+                    analysis.pegRatioFromRatios) != null
+                    ? (
+                        analysis.pegRatioFromRatios?.value ??
+                        analysis.pegRatioFromRatios
+                      ).toFixed(2)
+                    : "–"}
+
+                  {analysis.pegRatioFromRatios?.passed === true
                     ? "✅"
-                    : analysis.pegRatio?.passed === false
+                    : analysis.pegRatioFromRatios?.passed === false
                     ? "❌\n❗Alacsony nyereségnövekedés\nA cég profitja lassan vagy alig nő évről évre.\nEz a mutató inkább csak tájékoztató jellegű, nem lehet teljesen pontosat számolni❗"
                     : ""}
                 </Text>
-                <AnimatedExpandable expanded={expandedCards["pegRatio"]}>
+                <AnimatedExpandable
+                  expanded={expandedCards["pegRatioFromRatios"]}
+                >
                   <Text style={styles.expandedText}>
                     Azt mutatja meg, hogy a cég P/E aránya (ára a nyereségéhez
                     képest) mennyire indokolt a várható növekedés alapján.
@@ -356,27 +593,64 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
 
-            {analysis.peRatio !== undefined && (
+            {analysis.peRatioFromRatios !== undefined && (
               <Pressable
-                onPress={() => toggleCard("peRatio")}
+                onPress={() => toggleCard("peRatioFromRatios")}
                 style={styles.card}
               >
                 <Text style={styles.subtitle}>📊 P/E Ratio</Text>
                 <Text style={styles.item}>
-                  {analysis.peRatio?.value ?? analysis.peRatio}{" "}
-                  {analysis.peRatio?.passed === true
+                  {typeof (
+                    analysis.peRatioFromRatios?.value ??
+                    analysis.peRatioFromRatios
+                  ) === "number"
+                    ? (
+                        analysis.peRatioFromRatios?.value ??
+                        analysis.peRatioFromRatios
+                      ).toFixed(2)
+                    : "–"}
+                  {analysis.peRatioFromRatios?.passed === true
                     ? "✅"
-                    : analysis.peRatio?.passed === false
-                    ? "❌\n❗Valószínűleg túlértékelt\nA részvény ára magasabb, mint amit a cég teljesítménye indokol."
+                    : analysis.peRatioFromRatios?.passed === false
+                    ? "❌"
                     : ""}
                 </Text>
-                <AnimatedExpandable expanded={expandedCards["peRatio"]}>
+                <AnimatedExpandable
+                  expanded={expandedCards["peRatioFromRatios"]}
+                >
                   <Text style={styles.expandedText}>
-                    Price to Earnings – Ár/nyereség arány{"\n"}A részvény ára
-                    hányszorosát éri a cég egy részvényre jutó éves
-                    nyereségének.
-                    {"\n"}➡️ Magas: drága, alacsony: olcsóbb – de függ a
-                    növekedési kilátásoktól is.
+                    <Text>
+                      📘{" "}
+                      <Text style={{ fontWeight: "bold" }}>
+                        A P/E Ratio (Price to Earnings, ár/nyereség arány)
+                      </Text>{" "}
+                      azt mutatja meg, hogy a részvény ára hányszorosát éri a
+                      cég egy részvényre jutó éves nyereségének.{"\n"}
+                      Ez egy gyakran használt mutató a részvények értékeléséhez.
+                      {"\n\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Mit jelent az értéke?
+                      </Text>
+                      {"\n\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Alacsony P/E (kb. 15 alatt)
+                      </Text>
+                      {"\n"}A részvény alulértékelt lehet, de előfordulhat, hogy
+                      a vállalat kilátásai rosszak vagy a befektetők bizalma
+                      gyenge. Értékalapú befektetők számára vonzó lehet.{"\n\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Normál P/E (kb. 15–25 között)
+                      </Text>
+                      {"\n"}
+                      Átlagosnak tekinthető, stabil és kiegyensúlyozott
+                      vállalatot jelezhet.{"\n\n"}
+                      <Text style={{ fontWeight: "bold" }}>
+                        Magas P/E (25 felett)
+                      </Text>
+                      {"\n"}A befektetők nagy növekedést várnak a cégtől, de
+                      fennáll a veszélye annak is, hogy a részvény túl van
+                      árazva.
+                    </Text>
                   </Text>
                 </AnimatedExpandable>
               </Pressable>
@@ -437,5 +711,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#555",
     textAlign: "center",
+  },
+  greenText: {
+    color: "#3CB371",
+    fontWeight: "bold",
+  },
+  redText: {
+    color: "red",
+    fontWeight: "bold",
+  },
+  growthAlertText: {
+    color: "red",
+    fontWeight: "normal",
+    fontSize: 14,
   },
 });

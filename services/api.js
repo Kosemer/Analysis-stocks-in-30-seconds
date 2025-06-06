@@ -1,6 +1,6 @@
 // --- Konstansok ---
-//const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
-const API_KEY = "kCkgQOjqMBI4Jhkchxn5FsJOQiNulc7Q ";
+const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
+//const API_KEY = "kCkgQOjqMBI4Jhkchxn5FsJOQiNulc7Q ";
 const BASE_URL_FMP = "https://financialmodelingprep.com/api/v3";
 
 // --- Fő adatlekérő függvény ---
@@ -132,8 +132,7 @@ export async function fetchStockData(ticker) {
         ? (metricsData[0].roeTTM * 100).toFixed(2) + "%"
         : "n.a.";
 
-        console.log("metricsDataCurrentRatio:", metricsDataCurrentRatio);
-
+    console.log("metricsDataCurrentRatio:", metricsDataCurrentRatio);
 
     // ROE 5 éves átlag (éves key-metrics alapján)
     const roe5YArray = metricsDataCurrentRatio
@@ -156,11 +155,7 @@ export async function fetchStockData(ticker) {
       const roe = typeof roeRaw === "number" ? roeRaw.toFixed(2) : "n.a.";
       return { year, roe };
     });
-    
-    
-    
-    
-  
+
     // EPS növekedés (financial-growth végpontból)
     const profitGrowthRaw =
       growthData.length > 0 && typeof growthData[0].epsgrowth === "number"
@@ -179,9 +174,23 @@ export async function fetchStockData(ticker) {
       pegRatio = (peRatioRaw / profitGrowthRaw).toFixed(2);
     }
 
-    console.log("P/E:", peRatioRaw);
-    console.log("EPS growth raw:", profitGrowthRaw);
-    console.log("PEG számítás helyesen:", peRatioRaw / profitGrowthRaw);
+    const peRatioFromRatios = quickRatioNormalData[0]?.priceEarningsRatio;
+    const pegRatioFromRatios =
+      quickRatioNormalData[0]?.priceEarningsToGrowthRatio;
+
+    const pegTTM =
+      quickRatioTTMData[0]?.priceToEarningsGrowthRatioTTM != null
+        ? quickRatioTTMData[0].priceToEarningsGrowthRatioTTM.toFixed(2)
+        : "n.a.";
+
+    const forwardPegTTM =
+      quickRatioTTMData[0]?.forwardPriceToEarningsGrowthRatioTTM != null
+        ? quickRatioTTMData[0].forwardPriceToEarningsGrowthRatioTTM.toFixed(2)
+        : "n.a.";
+
+    console.log("priceEarningsRatio (ratios):", pegTTM);
+    console.log("priceEarningsToGrowthRatio (ratios):", forwardPegTTM);
+    console.log("ratios-ttm data:", quickRatioTTMData[0]);
 
     // Quick ratio számítása
     /*let quickRatio = "n.a.";
@@ -235,8 +244,8 @@ export async function fetchStockData(ticker) {
       discountRate,
       terminalGrowth,
       profitGrowth,
-      peRatio,
-      pegRatio,
+      peRatioFromRatios,
+      pegRatioFromRatios,
       roe5Y,
       roe5YAvg,
       quickRatio,
@@ -246,7 +255,7 @@ export async function fetchStockData(ticker) {
       revenueGrowthByYear,
       isRevenueGrowing10Percent,
       currentRatio,
-      roeList
+      roeList,
     };
   } catch (error) {
     console.error("API hiba:", error);
