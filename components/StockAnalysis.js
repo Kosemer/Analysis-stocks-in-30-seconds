@@ -772,7 +772,7 @@ export default function StockAnalysis({ analysis }) {
                 style={styles.card}
               >
                 {/* <<< MÓDOSÍTVA: A cím is lehet picit pontosabb >>> */}
-                <Text style={styles.subtitle}>📊 P/E Ratio (TTM)</Text>
+                <Text style={styles.subtitle}>📊 P/E Ratio (TTM){"\n"} Árfolyam/nyereség arány az elmúlt 12 hónapban</Text>
 
                 <View style={styles.valueRow}>
                   {" "}

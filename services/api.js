@@ -1,6 +1,6 @@
 // --- Konstansok ---
-const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
-//const API_KEY = "kCkgQOjqMBI4Jhkchxn5FsJOQiNulc7Q ";
+//const API_KEY = "erGPxRwdctAkDQfGz3Ngtmz8kUJha5zA";
+const API_KEY = "kCkgQOjqMBI4Jhkchxn5FsJOQiNulc7Q ";
 const BASE_URL_FMP = "https://financialmodelingprep.com/api/v3";
 
 // --- Fő adatlekérő függvény ---
