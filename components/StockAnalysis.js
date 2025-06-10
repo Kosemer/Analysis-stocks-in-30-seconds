@@ -264,7 +264,6 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
-
             {/*KÉSZ, HELYES ADATOK*/}
             {analysis.quickRatioTTM !== undefined && (
               <Pressable
@@ -360,7 +359,6 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
-
             {/*KÉSZ, HELYES ADATOK*/}
             {analysis.currentRatio !== undefined && (
               <Pressable
@@ -461,7 +459,6 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
-
             {/*KÉSZ, HELYES ADATOK*/}
             {analysis.roeList && Array.isArray(analysis.roeList) && (
               <Pressable
@@ -558,7 +555,6 @@ export default function StockAnalysis({ analysis }) {
               </Pressable>
             )}
             {/*KÉSZ, HELYES ADATOK*/}
-
             {analysis.pegRatioFromRatios !== undefined && (
               <Pressable
                 onPress={() => toggleCard("pegRatioFromRatios")}
@@ -592,7 +588,6 @@ export default function StockAnalysis({ analysis }) {
                 </AnimatedExpandable>
               </Pressable>
             )}
-
             {analysis.peRatioFromRatios !== undefined && (
               <Pressable
                 onPress={() => toggleCard("peRatioFromRatios")}
@@ -600,6 +595,7 @@ export default function StockAnalysis({ analysis }) {
               >
                 <Text style={styles.subtitle}>📊 P/E Ratio</Text>
                 <Text style={styles.item}>
+                  {/* ... (ez a rész nem változik) ... */}
                   {typeof (
                     analysis.peRatioFromRatios?.value ??
                     analysis.peRatioFromRatios
@@ -618,40 +614,227 @@ export default function StockAnalysis({ analysis }) {
                 <AnimatedExpandable
                   expanded={expandedCards["peRatioFromRatios"]}
                 >
-                  <Text style={styles.expandedText}>
-                    <Text>
+                  <View>
+                    <Text style={styles.expandedText}>
+                      <Text>
+                        📘{" "}
+                        <Text style={{ fontWeight: "bold" }}>
+                          A P/E Ratio (Price to Earnings, ár/nyereség arány)
+                        </Text>{" "}
+                        azt mutatja meg, hogy a részvény ára hányszorosát éri a
+                        cég egy részvényre jutó éves nyereségének.{"\n"}
+                        Ez egy gyakran használt mutató a részvények
+                        értékeléséhez.
+                        {"\n\n"}
+                        <Text style={{ fontWeight: "bold" }}>
+                          Mit jelent az értéke?
+                        </Text>
+                        {"\n\n"}
+                        <Text style={{ fontWeight: "bold" }}>
+                          Alacsony P/E (kb. 15 alatt)
+                        </Text>
+                        {"\n"}A részvény alulértékelt lehet, de előfordulhat,
+                        hogy a vállalat kilátásai rosszak vagy a befektetők
+                        bizalma gyenge. Értékalapú befektetők számára vonzó
+                        lehet.{"\n\n"}
+                        <Text style={{ fontWeight: "bold" }}>
+                          Normál P/E (kb. 15–25 között)
+                        </Text>
+                        {"\n"}
+                        Átlagosnak tekinthető, stabil és kiegyensúlyozott
+                        vállalatot jelezhet.{"\n\n"}
+                        <Text style={{ fontWeight: "bold" }}>
+                          Magas P/E (25 felett)
+                        </Text>
+                        {"\n"}A befektetők nagy növekedést várnak a cégtől, de
+                        fennáll a veszélye annak is, hogy a részvény túl van
+                        árazva.
+                      </Text>
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.expandedText,
+                        { fontWeight: "bold", marginTop: 16, marginBottom: 8 },
+                      ]}
+                    >
+                      Átlagos P/E arányok iparáganként (TTM)
+                    </Text>
+
+                    {/* --- ITT KEZDŐDIK A SZÍNEZETT TÁBLÁZAT --- */}
+                    <View style={styles.table}>
+                      {/* Fejléc */}
+                      <View style={[styles.tableRow, styles.tableHeaderRow]}>
+                        <Text style={[styles.tableCell, styles.tableHeader]}>
+                          Iparág
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            styles.tableHeader,
+                            { textAlign: "right" },
+                          ]}
+                        >
+                          Átlagos P/E
+                        </Text>
+                      </View>
+
+                      {/* Adatsorok váltakozó színekkel */}
+                      <View style={[styles.tableRow, styles.tableRowOdd]}>
+                        <Text style={[styles.tableCell, styles.tableCellLight]}>
+                          Technológia
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            styles.tableCellLight,
+                            { textAlign: "right" },
+                          ]}
+                        >
+                          20-50+
+                        </Text>
+                      </View>
+                      <View style={[styles.tableRow, styles.tableRowEven]}>
+                        <Text style={[styles.tableCell, styles.tableCellLight]}>
+                          Egészségügy
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            styles.tableCellLight,
+                            { textAlign: "right" },
+                          ]}
+                        >
+                          15-30
+                        </Text>
+                      </View>
+                      <View style={[styles.tableRow, styles.tableRowOdd]}>
+                        <Text style={[styles.tableCell, styles.tableCellLight]}>
+                          Pénzügy
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            styles.tableCellLight,
+                            { textAlign: "right" },
+                          ]}
+                        >
+                          10-20
+                        </Text>
+                      </View>
+                      <View style={[styles.tableRow, styles.tableRowEven]}>
+                        <Text style={[styles.tableCell, styles.tableCellLight]}>
+                          Ipar és alapanyagok
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            styles.tableCellLight,
+                            { textAlign: "right" },
+                          ]}
+                        >
+                          10-25
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.tableRow,
+                          styles.tableRowOdd,
+                          { borderBottomWidth: 0 },
+                        ]}
+                      >
+                        <Text style={[styles.tableCell, styles.tableCellLight]}>
+                          Fogyasztási cikkek
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            styles.tableCellLight,
+                            { textAlign: "right" },
+                          ]}
+                        >
+                          15-25
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* ... (a táblázat utáni magyarázat nem változik) ... */}
+                  </View>
+                </AnimatedExpandable>
+              </Pressable>
+            )}
+
+            {/* <<< MÓDOSÍTVA: Az új `peRatioTTM` objektumot ellenőrizzük >>> */}
+            {analysis.peRatioTTM && (
+              <Pressable
+                // <<< MÓDOSÍTVA: A kártya azonosítója is változik >>>
+                onPress={() => toggleCard("peRatioTTM")}
+                style={styles.card}
+              >
+                {/* <<< MÓDOSÍTVA: A cím is lehet picit pontosabb >>> */}
+                <Text style={styles.subtitle}>📊 P/E Ratio (TTM)</Text>
+
+                <View style={styles.valueRow}>
+                  {" "}
+                  {/* <<< ÚJ: konténer a jobb elrendezéshez */}
+                  <Text style={styles.itemValue}>
+                    {/* <<< MÓDOSÍTVA: Érték kiolvasása az új objektumból >>> */}
+                    {typeof analysis.peRatioTTM.value === "number"
+                      ? analysis.peRatioTTM.value.toFixed(2)
+                      : "–"}
+                  </Text>
+                  <Text style={styles.itemIcon}>
+                    {/* <<< MÓDOSÍTVA: A pipa/X az új `passed` értékből jön >>> */}
+                    {analysis.peRatioTTM.passed ? "✅" : "❌"}
+                  </Text>
+                </View>
+
+                {/* <<< ÚJ: A dinamikus komment megjelenítése >>> */}
+                {analysis.peRatioTTM.comment && (
+                  <Text style={styles.commentText}>
+                    {analysis.peRatioTTM.comment}
+                  </Text>
+                )}
+
+                <AnimatedExpandable
+                  // <<< MÓDOSÍTVA: A kártya azonosítója itt is változik >>>
+                  expanded={expandedCards["peRatioTTM"]}
+                >
+                  <View>
+                    {/* <<< ÚJ: Dinamikus elemzési adatok megjelenítése a lenyíló részben >>> */}
+                    <Text style={styles.expandedHeader}>Elemzés adatai</Text>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Cég szektora:</Text>
+                      <Text style={styles.detailValue}>
+                        {analysis.peRatioTTM.sectorDisplay}
+                      </Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>
+                        Referencia P/E tartomány:
+                      </Text>
+                      <Text style={styles.detailValue}>
+                        {analysis.peRatioTTM.benchmark}
+                      </Text>
+                    </View>
+
+                    <Text style={styles.expandedHeader}>
+                      Általános tudnivalók
+                    </Text>
+                    <Text style={styles.expandedText}>
                       📘{" "}
                       <Text style={{ fontWeight: "bold" }}>
                         A P/E Ratio (Price to Earnings, ár/nyereség arány)
                       </Text>{" "}
                       azt mutatja meg, hogy a részvény ára hányszorosát éri a
-                      cég egy részvényre jutó éves nyereségének.{"\n"}
-                      Ez egy gyakran használt mutató a részvények értékeléséhez.
-                      {"\n\n"}
-                      <Text style={{ fontWeight: "bold" }}>
-                        Mit jelent az értéke?
-                      </Text>
-                      {"\n\n"}
-                      <Text style={{ fontWeight: "bold" }}>
-                        Alacsony P/E (kb. 15 alatt)
-                      </Text>
-                      {"\n"}A részvény alulértékelt lehet, de előfordulhat, hogy
-                      a vállalat kilátásai rosszak vagy a befektetők bizalma
-                      gyenge. Értékalapú befektetők számára vonzó lehet.{"\n\n"}
-                      <Text style={{ fontWeight: "bold" }}>
-                        Normál P/E (kb. 15–25 között)
-                      </Text>
-                      {"\n"}
-                      Átlagosnak tekinthető, stabil és kiegyensúlyozott
-                      vállalatot jelezhet.{"\n\n"}
-                      <Text style={{ fontWeight: "bold" }}>
-                        Magas P/E (25 felett)
-                      </Text>
-                      {"\n"}A befektetők nagy növekedést várnak a cégtől, de
-                      fennáll a veszélye annak is, hogy a részvény túl van
-                      árazva.
+                      cég egy részvényre jutó éves nyereségének...
+                      {/* ... A többi statikus magyarázó szöveg itt változatlanul maradhat ... */}
                     </Text>
-                  </Text>
+
+                    {/* A statikus táblázatot akár el is távolíthatod, mivel most már
+            dinamikusan jeleníted meg a releváns referencia tartományt,
+            de oktatási céllal maradhat. */}
+                  </View>
                 </AnimatedExpandable>
               </Pressable>
             )}
@@ -724,5 +907,46 @@ const styles = StyleSheet.create({
     color: "red",
     fontWeight: "normal",
     fontSize: 14,
+  },
+  table: {
+    borderWidth: 1,
+    borderColor: "#4a6572", // Sötétebb keret, ami illik a kékhez
+    borderRadius: 8,
+    marginTop: 5,
+    overflow: "hidden",
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)", // Finom elválasztó a sötét sorok között
+  },
+
+  // --- ÚJ ÉS MÓDOSÍTOTT STÍLUSOK ---
+  tableHeaderRow: {
+    backgroundColor: "#2c3e50",
+    borderBottomWidth: 1,
+    borderColor: "#4a6572", // Erősebb elválasztó a fejléc alatt
+  },
+  tableHeader: {
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  tableRowOdd: {
+    backgroundColor: "#75EDA9", // Első sötétkék árnyala
+  },
+  tableRowEven: {
+    backgroundColor: "#fff",
+  },
+  tableCell: {
+    flex: 1,
+    fontSize: 14,
+    color: "#555",
+  },
+  tableCellLight: {
+    color: "#1A2E33",
+    fontWeight: "bold",
   },
 });

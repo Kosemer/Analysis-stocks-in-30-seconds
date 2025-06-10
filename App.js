@@ -6,6 +6,7 @@ import { fetchStockData } from "./services/api";
 import { calculateDCF } from "./services/dcf";
 import StockAnalysis from "./components/StockAnalysis";
 import { analyzeStock } from './services/analyzer';
+import { getUniqueSectors } from './utils/getUniqueSectors';
 
 export default function App() {
   const [ticker, setTicker] = useState("AAPL");
@@ -25,6 +26,8 @@ export default function App() {
       evaluation.revenueGrowthByYear = data.revenueGrowthByYear;
       setAnalysis(evaluation);
 
+      await getUniqueSectors();
+
       // Itt a mentési és értesítési logika...
 
     } catch (err) {
@@ -35,7 +38,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📊 Részvény analizáló</Text>
+      <Text style={styles.title}>📊 Részvény elemző</Text>
       <StockInput value={ticker} onChange={setTicker} />
 
       <Pressable

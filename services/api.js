@@ -15,6 +15,12 @@ export async function fetchStockData(ticker) {
     const profileData = await profileRes.json();
     const profile = profileData[0] || {};
 
+        // <<< ÚJ KÓD KEZDETE >>>
+    // A szektor értékének kinyerése és logolása
+    const sector = profile.sector || "n.a."; // Ha nincs sector, "n.a." lesz az értéke
+    console.log(`A(z) ${ticker} cég szektora:`, sector);
+    // <<< ÚJ KÓD VÉGE >>>
+
     // Aktuális ár és volumen
     const quoteRes = await fetch(
       `${BASE_URL_FMP}/quote/${ticker}?apikey=${API_KEY}`
@@ -132,7 +138,7 @@ export async function fetchStockData(ticker) {
         ? (metricsData[0].roeTTM * 100).toFixed(2) + "%"
         : "n.a.";
 
-    console.log("metricsDataCurrentRatio:", metricsDataCurrentRatio);
+    //console.log("metricsDataCurrentRatio:", metricsDataCurrentRatio);
 
     // ROE 5 éves átlag (éves key-metrics alapján)
     const roe5YArray = metricsDataCurrentRatio
@@ -146,7 +152,7 @@ export async function fetchStockData(ticker) {
           ).toFixed(2) + "%"
         : "n.a.";
 
-    console.log("ROE (5Y átlag):", roe5YAvg);
+    //console.log("ROE (5Y átlag):", roe5YAvg);
 
     // ROE lekérése (returnOnEquity)
     const roeList = metricsDataCurrentRatio.map((entry, index) => {
@@ -178,19 +184,19 @@ export async function fetchStockData(ticker) {
     const pegRatioFromRatios =
       quickRatioNormalData[0]?.priceEarningsToGrowthRatio;
 
-    const pegTTM =
-      quickRatioTTMData[0]?.priceToEarningsGrowthRatioTTM != null
-        ? quickRatioTTMData[0].priceToEarningsGrowthRatioTTM.toFixed(2)
+    const priceToEarningsGrowthRatioTTM =
+      quickRatioTTMData[0]?.pegRatioTTM != null
+        ? quickRatioTTMData[0].pegRatioTTM.toFixed(2)
         : "n.a.";
 
-    const forwardPegTTM =
-      quickRatioTTMData[0]?.forwardPriceToEarningsGrowthRatioTTM != null
-        ? quickRatioTTMData[0].forwardPriceToEarningsGrowthRatioTTM.toFixed(2)
+    const priceToEarningsRatioTTM =
+      quickRatioTTMData[0]?.peRatioTTM != null
+        ? quickRatioTTMData[0].peRatioTTM.toFixed(2)
         : "n.a.";
 
-    console.log("priceEarningsRatio (ratios):", pegTTM);
-    console.log("priceEarningsToGrowthRatio (ratios):", forwardPegTTM);
-    console.log("ratios-ttm data:", quickRatioTTMData[0]);
+    console.log("pegTTM:", priceToEarningsGrowthRatioTTM);
+    console.log("priceToEarningsRatioTTM:", priceToEarningsRatioTTM);
+    //console.log("ratios-ttm data:", quickRatioTTMData[0]);
 
     // Quick ratio számítása
     /*let quickRatio = "n.a.";
@@ -245,7 +251,9 @@ export async function fetchStockData(ticker) {
       terminalGrowth,
       profitGrowth,
       peRatioFromRatios,
+      priceToEarningsRatioTTM,
       pegRatioFromRatios,
+      priceToEarningsGrowthRatioTTM,
       roe5Y,
       roe5YAvg,
       quickRatio,
@@ -256,6 +264,7 @@ export async function fetchStockData(ticker) {
       isRevenueGrowing10Percent,
       currentRatio,
       roeList,
+      sector,
     };
   } catch (error) {
     console.error("API hiba:", error);
