@@ -15,7 +15,7 @@ export async function fetchStockData(ticker) {
     const profileData = await profileRes.json();
     const profile = profileData[0] || {};
 
-        // <<< ÚJ KÓD KEZDETE >>>
+    // <<< ÚJ KÓD KEZDETE >>>
     // A szektor értékének kinyerése és logolása
     const sector = profile.sector || "n.a."; // Ha nincs sector, "n.a." lesz az értéke
     console.log(`A(z) ${ticker} cég szektora:`, sector);
@@ -27,6 +27,27 @@ export async function fetchStockData(ticker) {
     );
     const quoteData = await quoteRes.json();
     const quote = quoteData[0] || {};
+
+    const currentPrice = quote.price || 0;
+    const changesPercentage = quote.changesPercentage || 0;
+    const change = quote.change || 0;
+    const dayLow = quote.dayLow || 0;
+    const dayHigh = quote.dayHigh || 0;
+    const priceAvg50 = quote.priceAvg50 || 0;
+    const priceAvg200 = quote.priceAvg200 || 0;
+    const volume = quote.volume || 0;
+    const avgVolume = quote.avgVolume || 0;
+    const timestamp = quote.timestamp || 0;
+
+    console.log(`Aktuális ár (${ticker}): $${currentPrice}`);
+    console.log(`Napi változás: ${change} USD (${changesPercentage}%)`);
+    console.log(`Napi minimum: $${dayLow}`);
+    console.log(`Napi maximum: $${dayHigh}`);
+    console.log(`50 napos átlagár: $${priceAvg50}`);
+    console.log(`200 napos átlagár: $${priceAvg200}`);
+    console.log(`Forgalom: ${volume.toLocaleString()}`);
+    console.log(`Átlagos forgalom: ${avgVolume.toLocaleString()}`);
+    console.log(`Timestamp: ${new Date(timestamp * 1000).toLocaleString()}`);
 
     // Income statement (bevételek)
     const incomeRes = await fetch(
@@ -221,7 +242,7 @@ export async function fetchStockData(ticker) {
       return volume.toString() + " darab";
     }
     const volumeRaw = typeof quote.volume === "number" ? quote.volume : "n.a.";
-    const volume = volumeRaw !== "n.a." ? formatVolume(volumeRaw) : "n.a.";
+    //const volume = volumeRaw !== "n.a." ? formatVolume(volumeRaw) : "n.a.";
 
     // 50 napos volumen átlag
     const volume50Days = histData
@@ -235,7 +256,6 @@ export async function fetchStockData(ticker) {
 
     // Statikus értékek (DCF-hez)
     const sharesOutstanding = profile.sharesOutstanding || 0;
-    const currentPrice = quote.price || 0;
     const freeCashFlow = 6000000000;
     const growthRate = 0.12;
     const discountRate = 0.08;
@@ -243,7 +263,7 @@ export async function fetchStockData(ticker) {
 
     // --- 3. Visszatérési érték ---
     return {
-      currentPrice,
+
       sharesOutstanding,
       freeCashFlow,
       growthRate,
@@ -258,13 +278,24 @@ export async function fetchStockData(ticker) {
       roe5YAvg,
       quickRatio,
       quickRatioTTM,
-      volume,
       avgVolume50,
       revenueGrowthByYear,
       isRevenueGrowing10Percent,
       currentRatio,
       roeList,
       sector,
+
+      // Új mezők az aktuális részvényadatokhoz
+      currentPrice,
+      changesPercentage,
+      change,
+      dayLow,
+      dayHigh,
+      priceAvg50,
+      priceAvg200,
+      volume,
+      avgVolume, 
+      timestamp,
     };
   } catch (error) {
     console.error("API hiba:", error);

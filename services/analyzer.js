@@ -217,7 +217,31 @@ export function analyzeStock(data) {
   }
   // <<<  >>>
 
+   // <<< PEG szektor-specifikus elemzés (ÚJ LOGIKA) >>>
+   const pegRatioValue = parseFloat(data.pegRatioFromRatios);
+   const pegBenchmark = pegSectorBenchmarks[sector] || pegSectorBenchmarks.default;
+   let pegPassed = false;
+   let pegComment = "PEG érték nem elérhető vagy nem értelmezhető.";
+ 
+   if (!isNaN(pegRatioValue)) {
+     if (pegRatioValue < 0) {
+       pegPassed = false;
+       pegComment = `A cég veszteséges vagy a növekedési kilátások negatívak (negatív PEG: ${pegRatioValue.toFixed(2)}).`;
+     } else if (pegRatioValue >= pegBenchmark.low && pegRatioValue <= pegBenchmark.high) {
+       pegPassed = true;
+       pegComment = `A PEG ráta a szektorban elfogadott ${pegBenchmark.low}-${pegBenchmark.high} tartományon belül van.`;
+     } else if (pegRatioValue < pegBenchmark.low) {
+       pegPassed = true; // Az alacsony PEG általában jó jel, ezért itt 'passed'
+       pegComment = `A PEG ráta kedvező, alacsonyabb a szektorra jellemzőnél, ami potenciálisan alulértékelt részvényre utal.`;
+     } else { // pegRatioValue > pegBenchmark.high
+       pegPassed = false;
+       pegComment = `A PEG ráta magasabb a szektorra jellemzőnél, ami potenciálisan túlértékelt részvényre utal.`;
+     }
+   }
+  
+
   const result = {
+    currentPrice: { value: data.currentPrice, passed: data.currentPrice },
     profitGrowth: { value: data.profitGrowth, passed: data.profitGrowth > 0 },
     peRatioFromRatios: {
       value: data.peRatioFromRatios,
@@ -240,8 +264,12 @@ export function analyzeStock(data) {
     },
 
     pegRatioFromRatios: {
-      value: data.pegRatioFromRatios,
-      passed: data.pegRatioFromRatios < 2,
+      value: !isNaN(pegRatioValue) ? pegRatioValue : "n.a.",
+      passed: pegPassed,
+      benchmark: `${pegBenchmark.low} - ${pegBenchmark.high}`,
+      comment: pegComment,
+      sector: sector,
+      sectorDisplay: sectorDisplay,
     },
     roe5Y: {
       value: roeAvg,
@@ -281,6 +309,16 @@ export function analyzeStock(data) {
       passed: data.isRevenueGrowing10Percent === true,
     },
     /* Éves bevételnövekedés ellenőrzése */
+    currentPrice: { value: data.currentPrice, passed: data.currentPrice },
+    changesPercentage: { value: data.changesPercentage, passed: data.changesPercentage > 0 },
+    change: { value: data.change, passed: data.change > 0 },
+    dayLow: { value: data.dayLow, passed: data.dayLow === false},
+    dayHigh: { value: data.dayHigh, passed: data.dayHigh === true },
+    priceAvg50: { value: data.priceAvg50, passed: data.priceAvg50 },
+    priceAvg200: { value: data.priceAvg200, passed: data.priceAvg200 },
+    volume: { value: data.volume, passed: data.volume }, 
+    avgVolume: { value: data.avgVolume, passed: data.avgVolume }, 
+    timestamp: { value: data.timestamp, passed: data.timestamp },
   };
 
   return result;

@@ -7,6 +7,7 @@ import {
   Pressable,
   Animated,
 } from "react-native";
+import StockPriceDetails from "./StockPriceDetails";
 import ResultCard from "./ResultCard";
 
 // 🔽 Dinamikus magasság animációval rendelkező komponens
@@ -52,14 +53,24 @@ export default function StockAnalysis({ analysis }) {
     }));
   };
 
+  const priceDetailsData = {
+    currentPrice: analysis.currentPrice,
+    changesPercentage: analysis.changesPercentage,
+    change: analysis.change,
+    dayLow: analysis.dayLow,
+    dayHigh: analysis.dayHigh,
+    priceAvg50: analysis.priceAvg50,
+    priceAvg200: analysis.priceAvg200,
+    volume: analysis.volume,
+    avgVolume: analysis.avgVolume,
+    timestamp: analysis.timestamp,
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        {analysis.currentPrice && (
-          <ResultCard currentPrice={analysis.currentPrice} fairValue={150.0} />
-        )}
+      <StockPriceDetails analysis={priceDetailsData} />
         <Text style={styles.title}>📋 Elemzés eredménye</Text>
-
         {analysis.volume && (
           <Pressable onPress={() => toggleCard("volume")} style={styles.card}>
             <Text style={styles.subtitle}>📊 Volume (Forgalom)</Text>
@@ -772,7 +783,10 @@ export default function StockAnalysis({ analysis }) {
                 style={styles.card}
               >
                 {/* <<< MÓDOSÍTVA: A cím is lehet picit pontosabb >>> */}
-                <Text style={styles.subtitle}>📊 P/E Ratio (TTM){"\n"} Árfolyam/nyereség arány az elmúlt 12 hónapban</Text>
+                <Text style={styles.subtitle}>
+                  📊 P/E Ratio (TTM){"\n"} Árfolyam/nyereség arány az elmúlt 12
+                  hónapban
+                </Text>
 
                 <View style={styles.valueRow}>
                   {" "}
@@ -832,7 +846,7 @@ export default function StockAnalysis({ analysis }) {
                     </Text>
 
                     {/* A statikus táblázatot akár el is távolíthatod, mivel most már
-            dinamikusan jeleníted meg a releváns referencia tartományt,
+            dinamikusan jeleníted meg a releváns referencia tartományt,wsy
             de oktatási céllal maradhat. */}
                   </View>
                 </AnimatedExpandable>
@@ -840,7 +854,7 @@ export default function StockAnalysis({ analysis }) {
             )}
           </View>
         )}
-      </View>
+        </View>
     </ScrollView>
   );
 }
