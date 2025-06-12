@@ -71,26 +71,7 @@ export default function StockAnalysis({ analysis }) {
       <View style={styles.container}>
       <StockPriceDetails analysis={priceDetailsData} />
         <Text style={styles.title}>📋 Elemzés eredménye</Text>
-        {analysis.volume && (
-          <Pressable onPress={() => toggleCard("volume")} style={styles.card}>
-            <Text style={styles.subtitle}>📊 Volume (Forgalom)</Text>
-            <Text style={styles.item}>
-              Forgalom (napi): {analysis.volume?.value ?? analysis.volume}
-              {"\n"}
-              50 napos átlag:{" "}
-              {typeof analysis.avgVolume50 === "number"
-                ? (analysis.avgVolume50 / 1e6).toFixed(2) + "M darab"
-                : "n.a."}
-            </Text>
 
-            <AnimatedExpandable expanded={expandedCards["volume"]}>
-              <Text style={styles.expandedText}>
-                Az adott részvényből hány darabot adtak-vettek egy nap alatt.
-                {"\n"} ➡️ Minél nagyobb, annál aktívabb a kereskedés.
-              </Text>
-            </AnimatedExpandable>
-          </Pressable>
-        )}
 
         {/*KÉSZ, HELYES ADATOK*/}
         {analysis.revenueGrowthByYear && (
@@ -865,8 +846,9 @@ const styles = StyleSheet.create({
   },
   container: {
     marginTop: 20,
-    padding: 10,
-    backgroundColor: "#f2f2f2",
+    padding: 0,
+    //backgroundColor: "#f2f2f2",
+    backgroundColor: "#0B132B",
     borderRadius: 10,
   },
   title: {
@@ -874,17 +856,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 10,
     textAlign: "center",
+    color: '#fff',
   },
   subtitle: {
     fontWeight: "bold",
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
+    color: '#fff',
   },
   item: {
     fontSize: 16,
     marginBottom: 6,
     textAlign: "center",
+    color: '#fff',
   },
   growthContainer: {
     marginTop: 10,
@@ -893,20 +878,25 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   card: {
-    backgroundColor: "#ffffff",
+    //backgroundColor: "#ffffff",
+    backgroundColor: "#1C2541",
+    borderWidth: 1,
+    borderColor: '#3A506B', // Finom, világosabb szegély a mélységért
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 1,
+    marginLeft: 15,
+    marginRight: 15,
+    //shadowColor: "#000",
+    //shadowOpacity: 0.05,
+    //shadowOffset: { width: 0, height: 2 },
+    //shadowRadius: 4,
+    //elevation: 1,
   },
   expandedText: {
     marginTop: 10,
     fontSize: 15,
-    color: "#555",
+    color: '#fff',
     textAlign: "center",
   },
   greenText: {

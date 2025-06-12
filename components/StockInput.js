@@ -54,7 +54,7 @@ export default function StockInput({ value, onChange }) {
     setQuery(fullText);
     setSuggestions([]);
     setFocused(false);
-    onChange(item.Symbol);  // onChange csak a szimbólumot kapja meg, mert valószínűleg arra van szükség
+    onChange(item);  
     Keyboard.dismiss();
   };
 
@@ -109,6 +109,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 4,
+    color: '#fff',
+    backgroundColor: '#1C2541',
   },
   suggestionList: {
     maxHeight: 150,
