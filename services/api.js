@@ -15,6 +15,26 @@ export async function fetchStockData(ticker) {
     const profileData = await profileRes.json();
     const profile = profileData[0] || {};
 
+    // USD-HUF deviza lekérés
+    const forexRes = await fetch(
+      `${BASE_URL_FMP}/quote/USDHUF?apikey=${API_KEY}`
+    );
+    const forexData = await forexRes.json();
+    const forex = forexData[0] || {};
+    
+    const usdHufName = forex.name || "n.a.";
+    const usdHufPrice = forex.price ?? "n.a.";
+    const usdHufChange = forex.change ?? "n.a.";
+    const usdHufChangesPercentage = forex.changesPercentage ?? "n.a.";
+    const usdHufYearLow = forex.yearLow ?? "n.a.";
+    const usdHufYearHigh = forex.yearHigh ?? "n.a.";
+    const usdHufPriceAvg50 = forex.priceAvg50 ?? "n.a.";
+    const usdHufPriceAvg200 = forex.priceAvg200 ?? "n.a.";
+    
+    
+
+    // USD-HUF deviza lekérés
+
     // <<< ÚJ KÓD KEZDETE >>>
     // A szektor értékének kinyerése és logolása
     const sector = profile.sector || "n.a."; // Ha nincs sector, "n.a." lesz az értéke
@@ -38,16 +58,6 @@ export async function fetchStockData(ticker) {
     const volume = quote.volume || 0;
     const avgVolume = quote.avgVolume || 0;
     const timestamp = quote.timestamp || 0;
-
-    console.log(`Aktuális ár (${ticker}): $${currentPrice}`);
-    console.log(`Napi változás: ${change} USD (${changesPercentage}%)`);
-    console.log(`Napi minimum: $${dayLow}`);
-    console.log(`Napi maximum: $${dayHigh}`);
-    console.log(`50 napos átlagár: $${priceAvg50}`);
-    console.log(`200 napos átlagár: $${priceAvg200}`);
-    console.log(`Forgalom: ${volume.toLocaleString()}`);
-    console.log(`Átlagos forgalom: ${avgVolume.toLocaleString()}`);
-    console.log(`Timestamp: ${new Date(timestamp * 1000).toLocaleString()}`);
 
     // Income statement (bevételek)
     const incomeRes = await fetch(
@@ -263,7 +273,6 @@ export async function fetchStockData(ticker) {
 
     // --- 3. Visszatérési érték ---
     return {
-
       sharesOutstanding,
       freeCashFlow,
       growthRate,
@@ -294,8 +303,17 @@ export async function fetchStockData(ticker) {
       priceAvg50,
       priceAvg200,
       volume,
-      avgVolume, 
+      avgVolume,
       timestamp,
+      // DEVIZA mezők
+      usdHufName,
+      usdHufPrice,
+      usdHufChange,
+      usdHufChangesPercentage,
+      usdHufYearLow,
+      usdHufYearHigh,
+      usdHufPriceAvg50,
+      usdHufPriceAvg200,
     };
   } catch (error) {
     console.error("API hiba:", error);

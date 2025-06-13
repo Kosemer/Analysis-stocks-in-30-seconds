@@ -15,6 +15,7 @@ import { fetchStockData } from "./services/api";
 import { calculateDCF } from "./services/dcf";
 import { analyzeStock } from "./services/analyzer";
 import { getUniqueSectors } from "./utils/getUniqueSectors";
+import UsdHufWidget from "./services/UsdHufWidget";
 
 export default function App() {
   const [ticker, setTicker] = useState("AAPL");
@@ -103,7 +104,6 @@ export default function App() {
           <Text style={styles.buttonText}>Számítás</Text>
         </Pressable>
       </Animated.View>
-
       {/* Fix pozíciós részvény neve görgetés után */}
       <Animated.Text
         style={[
@@ -121,13 +121,14 @@ export default function App() {
       </Animated.Text>
 
       <Animated.ScrollView
-        contentContainerStyle={{ paddingTop: 160 }} // kb. a header magassága
+        contentContainerStyle={{ paddingTop: 250 }} // kb. a header magassága
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: true }
         )}
         scrollEventThrottle={16}
       >
+         <UsdHufWidget />
         {analysis && <StockAnalysis analysis={analysis} />}
       </Animated.ScrollView>
     </View>
