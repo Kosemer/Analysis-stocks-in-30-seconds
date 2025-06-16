@@ -23,17 +23,16 @@ export default function App() {
   const [fairValue, setFairValue] = useState(null);
   const [currentPrice, setCurrentPrice] = useState(null);
   const [analysis, setAnalysis] = useState(null);
+  // <<< MÓDOSÍTÁS 1: Új state változó a timestamp tárolására >>>
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const handleStockChange = (selection) => {
-    // Ha a felhasználó gépel, a selection egy string
     if (typeof selection === 'string') {
       setTicker(selection);
-      setCompanyName(''); // Töröljük a nevet, amíg nem választ újat
-    } 
-    // Ha a listából választ, egy objektumot kapunk
-    else if (typeof selection === 'object' && selection !== null) {
+      setCompanyName('');
+    } else if (typeof selection === 'object' && selection !== null) {
       const symbol = selection.Symbol || selection.symbol;
       const name = selection.Security || selection.name;
       setTicker(symbol);
@@ -68,6 +67,12 @@ export default function App() {
       const evaluation = analyzeStock(data);
       evaluation.revenueGrowthByYear = data.revenueGrowthByYear;
       setAnalysis(evaluation);
+      
+      // <<< MÓDOSÍTÁS 2: Beállítjuk a lastUpdated state-et a friss adatokból >>>
+      if (evaluation.timestamp && evaluation.timestamp.value) {
+        setLastUpdated(evaluation.timestamp.value);
+      }
+      
       await getUniqueSectors();
     } catch (err) {
       console.error("Adatlekérési vagy számítási hiba:", err);
@@ -103,8 +108,18 @@ export default function App() {
         >
           <Text style={styles.buttonText}>Számítás</Text>
         </Pressable>
+        
+        {/* <<< MÓDOSÍTÁS 3: A timestamp megjelenítése a gomb alatt >>> */}
+        {lastUpdated && (
+          <Text style={styles.timestampText}>
+            Adatok frissítve: {new Date(lastUpdated * 1000).toLocaleString('hu-HU', {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            })}
+          </Text>
+        )}
+        
       </Animated.View>
-      {/* Fix pozíciós részvény neve görgetés után */}
+      
       <Animated.Text
         style={[
           styles.stickyTitle,
@@ -121,7 +136,7 @@ export default function App() {
       </Animated.Text>
 
       <Animated.ScrollView
-        contentContainerStyle={{ paddingTop: 250 }} // kb. a header magassága
+        contentContainerStyle={{ paddingTop: 260 }} // << Kicsit megnöveltem, hogy elférjen a timestamp
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: true }
@@ -168,13 +183,20 @@ const styles = StyleSheet.create({
   },
   stickyTitle: {
     position: "absolute",
-    top: 10, // vagy 90, ha nagyobb biztonsági margót akarsz
+    top: 60, // Kicsit lejjebb igazítottam a jobb elhelyezkedésért
     left: 0,
     right: 0,
     textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
-    zIndex: 10, // csak hogy biztosan a ScrollView fölött legyen
-  },  
+    zIndex: 10,
+  },
+  // <<< MÓDOSÍTÁS 4: Új stílus a timestamp szöveghez >>>
+  timestampText: {
+    color: '#A9B4C2', // Halvány, szürkéskék szín a designból
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8, // Kis térköz a gomb felett
+  },
 });

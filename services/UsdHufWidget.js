@@ -97,6 +97,12 @@ const UsdHufWidget = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{forexData.name}</Text>
+      <View style={styles.separator} />
+      <View style={styles.headerRow}>
+      <Text style={styles.deviza}>Aktuális árfolyam</Text>
+      <Text style={styles.changeLabel}>Napi változás</Text>
+      
+      </View>
       <View style={styles.mainRow}>
         <Text style={styles.price}>
           {Number(forexData.price).toFixed(2)} Ft
@@ -178,16 +184,50 @@ const UsdHufWidget = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#1C2541",
-    borderRadius: 10,
-    padding: 15,
-    marginHorizontal: 20,
+    borderRadius: 16, // Nagyobb, modernebb rádiusz
+    padding: 20, // Több belső tér
+    marginHorizontal: 15,
     marginBottom: 20,
+    // Finom árnyék a kiemeléshez
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "600", // Semi-bold, modernebb mint a 'bold'
+    color: "#F5F5F5", // Enyhén törtfehér
+    textAlign: "center", // Középre igazított cím
+    marginBottom: 12,
+    letterSpacing: 0.5, // Finom betűköz
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 10,
+  },
+  
+  changeLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#A9B4C2",
+
+    textAlign: "right",
+  },
+  deviza: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#A9B4C2",
+
+    textAlign: "left",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#3A506B',
+    marginBottom: 15,
   },
   mainRow: {
     flexDirection: "row",
