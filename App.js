@@ -8,6 +8,9 @@ import {
   Animated,
   ScrollView,
   StatusBar,
+  useColorScheme, // <<< VÁLTOZÁS 1: Importáljuk a useColorScheme hookot
+  Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import StockInput from "./components/StockInput";
 import StockAnalysis from "./components/StockAnalysis";
@@ -17,43 +20,107 @@ import { analyzeStock } from "./services/analyzer";
 import { getUniqueSectors } from "./utils/getUniqueSectors";
 import UsdHufWidget from "./services/UsdHufWidget";
 
+// <<< VÁLTOZÁS 2: Téma definíciók az App komponenshez >>>
+const lightTheme = {
+  background: '#F8F9FA', // Enyhén törtfehér, hogy a widgetek kiemelkedjenek
+  textPrimary: '#212529', // Sötét szöveg
+  textSecondary: '#6C757D', // Halványabb szöveg (pl. timestamp)
+  buttonBackground: '#75EDA9', // Klasszikus kék gomb
+  buttonPressed: '#4E9A6F', // Sötétebb kék lenyomáskor
+  buttonText: '#212529', // Fehér szöveg a gombon
+    // --- ÁRNYÉK BEÁLLÍTÁSOK ---
+    shadowColor: '#000000', // Világos módban a fekete árnyék jó, de az opacitás fontos
+    shadowOpacity: 0.1,     // Finom, alig látható opacitás
+};
+
+const darkTheme = {
+  background: '#0B132B',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#A9B4C2',
+  buttonBackground: '#75EDA9',
+  buttonPressed: '#4E9A6F', // Sötétebb zöld lenyomáskor
+  buttonText: '#0B132B',
+};
+
+// <<< VÁLTOZÁS 3: A StyleSheet egy dinamikus függvény lett >>>
+const getStyles = (theme) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.background,
+    // A paddingTop-ot kivettem innen, mert a StatusBar kezeli
+  },
+  header: {
+    padding: 20,
+    backgroundColor: theme.background, // A header háttere is legyen a téma szerint
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: theme.textPrimary,
+  },
+  button: {
+    backgroundColor: theme.buttonBackground,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  buttonPressed: {
+    backgroundColor: theme.buttonPressed,
+  },
+  buttonText: {
+    color: theme.buttonText,
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  stickyTitle: {
+    position: "absolute",
+    top: 60,
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: theme.textPrimary,
+    zIndex: 10,
+  },
+  timestampText: {
+    color: theme.textSecondary,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+});
+
 export default function App() {
+  // <<< VÁLTOZÁS 4: A téma kiválasztása a rendszer beállítása alapján >>>
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const styles = getStyles(theme);
+
+  // A state és egyéb logika változatlan
   const [ticker, setTicker] = useState("AAPL");
   const [companyName, setCompanyName] = useState("Apple Inc.");
-  const [fairValue, setFairValue] = useState(null);
-  const [currentPrice, setCurrentPrice] = useState(null);
-  const [analysis, setAnalysis] = useState(null);
-  // <<< MÓDOSÍTÁS 1: Új state változó a timestamp tárolására >>>
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [analysis, setAnalysis] = useState(null);
+  const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
+  // ... a handleStockChange, handleCalc és az animációs logika változatlan ...
   const handleStockChange = (selection) => {
-    if (typeof selection === 'string') {
-      setTicker(selection);
-      setCompanyName('');
-    } else if (typeof selection === 'object' && selection !== null) {
-      const symbol = selection.Symbol || selection.symbol;
-      const name = selection.Security || selection.name;
-      setTicker(symbol);
-      setCompanyName(name);
-    }
+    if (typeof selection === 'string') { setTicker(selection); setCompanyName(''); }
+    else if (selection) { setTicker(selection.Symbol || selection.symbol); setCompanyName(selection.Security || selection.name); }
   };
-
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
-  const headerTranslate = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, -50],
-    extrapolate: "clamp",
-  });
-
   const handleCalc = async () => {
+    // Elrejti a billentyűzetet és a javaslatokat a számítás indításakor
+    Keyboard.dismiss(); 
+    setIsAnalysisLoading(true); // <<< TÖLTÉS INDÍTÁSA
+    setAnalysis(null);          // <<< RÉGI ADATOK TÖRLÉSE
     try {
+      // Az adatlekérési logika, ahogy eredetileg is volt
       const data = await fetchStockData(ticker.toUpperCase());
       const totalValue = calculateDCF(
         data.freeCashFlow,
@@ -62,27 +129,47 @@ export default function App() {
         data.terminalGrowth
       );
       const valuePerShare = totalValue / data.sharesOutstanding;
-      setFairValue(valuePerShare);
-      setCurrentPrice(data.currentPrice);
+      
+      // Az analízis lefuttatása
       const evaluation = analyzeStock(data);
       evaluation.revenueGrowthByYear = data.revenueGrowthByYear;
+      
+      // Az állapotok beállítása a friss adatokkal
+      // setFairValue(valuePerShare); // Ezt a sort valószínűleg nem használod, de itt volt
+      // setCurrentPrice(data.currentPrice); // Ezt a sort valószínűleg nem használod, de itt volt
       setAnalysis(evaluation);
       
-      // <<< MÓDOSÍTÁS 2: Beállítjuk a lastUpdated state-et a friss adatokból >>>
       if (evaluation.timestamp && evaluation.timestamp.value) {
         setLastUpdated(evaluation.timestamp.value);
       }
       
-      await getUniqueSectors();
+      // getUniqueSectors(); // Ha erre a függvényre nincs szükséged, ki is veheted
     } catch (err) {
       console.error("Adatlekérési vagy számítási hiba:", err);
-      Alert.alert("Hiba", "Nem sikerült lekérni vagy feldolgozni az adatokat.");
+      Alert.alert(
+        "Hiba",
+        `Nem sikerült lekérni vagy feldolgozni az adatokat a(z) '${ticker.toUpperCase()}' szimbólumhoz. Kérlek, ellenőrizd a beírt ticker nevet.`
+      );
+      // Hiba esetén töröljük a korábbi analízist
+      setAnalysis(null); 
+      setLastUpdated(null);
+    }
+    finally {
+      setIsAnalysisLoading(false); // <<< TÖLTÉS BEFEJEZÉSE (sikeres és sikertelen esetben is)
     }
   };
+  const headerOpacity = scrollY.interpolate({ inputRange: [0, 100], outputRange: [1, 0], extrapolate: "clamp" });
+  const headerTranslate = scrollY.interpolate({ inputRange: [0, 100], outputRange: [0, -50], extrapolate: "clamp" });
+  
 
   return (
+    // A paddingTop a belső View-ra került, hogy a StatusBar alá is a megfelelő szín kerüljön
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0B132B" />
+      {/* <<< VÁLTOZÁS 5: A StatusBar dinamikussá tétele >>> */}
+      <StatusBar 
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={theme.background} 
+      />
       <Animated.View
         style={[
           styles.header,
@@ -90,7 +177,7 @@ export default function App() {
             opacity: headerOpacity,
             transform: [{ translateY: headerTranslate }],
             position: "absolute",
-            top: 50,
+            top: 50, // Vagy amennyi a StatusBar magassága
             left: 0,
             right: 0,
             zIndex: 5,
@@ -98,105 +185,47 @@ export default function App() {
         ]}
       >
         <Text style={styles.title}>📊 Részvény elemző</Text>
-        <StockInput value={ticker} onChange={handleStockChange} />
+
+        {/* FONTOS: A gyerekkomponenseknek is át kell adni a témát! */}
+        <StockInput value={ticker} onChange={handleStockChange} theme={theme} />
+
         <Pressable
           onPress={handleCalc}
-          style={({ pressed }) => [
-            styles.button,
-            pressed ? styles.buttonPressed : null,
-          ]}
+          style={({ pressed }) => [ styles.button, pressed && styles.buttonPressed ]}
         >
           <Text style={styles.buttonText}>Számítás</Text>
         </Pressable>
         
-        {/* <<< MÓDOSÍTÁS 3: A timestamp megjelenítése a gomb alatt >>> */}
         {lastUpdated && (
           <Text style={styles.timestampText}>
-            Adatok frissítve: {new Date(lastUpdated * 1000).toLocaleString('hu-HU', {
-                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            })}
+            Adatok frissítve: {new Date(lastUpdated * 1000).toLocaleString('hu-HU')}
           </Text>
         )}
-        
       </Animated.View>
       
-      <Animated.Text
-        style={[
-          styles.stickyTitle,
-          {
-            opacity: scrollY.interpolate({
-              inputRange: [80, 120],
-              outputRange: [0, 1],
-              extrapolate: "clamp",
-            }),
-          },
-        ]}
-      >
+      <Animated.Text style={[ styles.stickyTitle, { opacity: scrollY.interpolate({ inputRange: [80, 120], outputRange: [0, 1], extrapolate: "clamp" }) } ]}>
         {companyName ? `${companyName} (${ticker.toUpperCase()})` : ticker.toUpperCase()}
       </Animated.Text>
 
       <Animated.ScrollView
-        contentContainerStyle={{ paddingTop: 260 }} // << Kicsit megnöveltem, hogy elférjen a timestamp
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
+        contentContainerStyle={{ paddingTop: 260 }}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
         scrollEventThrottle={16}
       >
-         <UsdHufWidget />
-        {analysis && <StockAnalysis analysis={analysis} />}
+        <UsdHufWidget />
+        {/* FONTOS: A gyerekkomponenseknek is át kell adni a témát! */}
+        {isAnalysisLoading && (
+          <View style={{ marginTop: 40, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={theme.buttonBackground} />
+          </View>
+        )}
+        
+        {/* 2. Ha nem tölt, ÉS van analízis, jelenítsük meg az eredményt */}
+        {!isAnalysisLoading && analysis && (
+          <StockAnalysis analysis={analysis} />
+        )}
+        
       </Animated.ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0B132B",
-    paddingTop: 50,
-  },
-  header: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#fff",
-  },
-  button: {
-    backgroundColor: "#75EDA9",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  buttonPressed: {
-    backgroundColor: "#005BBB",
-  },
-  buttonText: {
-    color: "#0B132B",
-    fontWeight: "bold",
-    fontSize: 18,
-  },
-  stickyTitle: {
-    position: "absolute",
-    top: 60, // Kicsit lejjebb igazítottam a jobb elhelyezkedésért
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    zIndex: 10,
-  },
-  // <<< MÓDOSÍTÁS 4: Új stílus a timestamp szöveghez >>>
-  timestampText: {
-    color: '#A9B4C2', // Halvány, szürkéskék szín a designból
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8, // Kis térköz a gomb felett
-  },
-});

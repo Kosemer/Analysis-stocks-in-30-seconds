@@ -34,7 +34,7 @@ export default function RoeCard({ data, isExpanded, onToggle, styles }) {
                   borderColor: "#ccc",
                 }}
               >
-                <Text style={{ fontWeight: "bold", color: '#fff'}}>{entry.year}</Text>
+                <Text style={styles.listKeyText}>{entry.year}</Text>
                 <Text style={roeColor}>{roeValue.toFixed(2)}%</Text>
               </View>
             );

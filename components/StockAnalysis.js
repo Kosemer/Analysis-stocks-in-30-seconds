@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, useColorScheme } from "react-native";
 
 // Meglévő komponensek importálása
 import StockPriceDetails from "./StockPriceDetails";
@@ -17,6 +17,12 @@ import PeRatioTTMCard from "./analysis/PeRatioTTMCard";
 
 export default function StockAnalysis({ analysis }) {
   const [expandedCards, setExpandedCards] = useState({});
+  
+  // 1. Az eszköz aktuális színsémájának lekérdezése
+  const colorScheme = useColorScheme();
+  
+  // 2. A stílusok generálása a színséma alapján
+  const styles = getStyles(colorScheme);
 
   const toggleCard = (key) => {
     setExpandedCards((prev) => ({
@@ -40,8 +46,10 @@ export default function StockAnalysis({ analysis }) {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {/* A StockPriceDetails komponenst is át kell majd alakítani, hogy fogadja a témát,
+          de a jelenlegi feladat csak a StockAnalysis-ra vonatkozik. */}
       <View style={styles.container}>
-        <StockPriceDetails analysis={priceDetailsData} />
+        <StockPriceDetails analysis={priceDetailsData} /> 
         <Text style={styles.title}>📋 Elemzés eredménye</Text>
 
         {analysis.revenueGrowthByYear && (
@@ -121,168 +129,230 @@ export default function StockAnalysis({ analysis }) {
   );
 }
 
-// A stílusok itt maradnak, és propként kapják meg a gyerek komponensek.
-// Így nem kell minden fájlban duplikálni őket.
-const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingBottom: 20,
-  },
-  container: {
-    marginTop: 20,
-    padding: 0,
-    backgroundColor: "#0B132B",
-    borderRadius: 10,
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 18,
-    marginBottom: 10,
-    textAlign: "center",
-    color: '#fff',
-  },
-  subtitle: {
-    fontWeight: "bold",
-    marginTop: 10,
-    fontSize: 16,
-    textAlign: "center",
-    color: '#fff',
-  },
-  item: {
-    fontSize: 16,
-    marginBottom: 6,
-    textAlign: "center",
-    color: '#fff',
-  },
-  growthContainer: {
-    marginTop: 10,
-  },
-  metricsContainer: {
-    marginTop: 10,
-  },
-  card: {
-    backgroundColor: "#1C2541",
-    borderWidth: 1,
-    borderColor: '#3A506B',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-    marginLeft: 15,
-    marginRight: 15,
-  },
-  expandedText: {
-    marginTop: 10,
-    fontSize: 15,
-    color: '#fff',
-    textAlign: "center",
-  },
-  greenText: {
-    color: "#3CB371",
-    fontWeight: "bold",
-  },
-  redText: {
-    color: "red",
-    fontWeight: "bold",
-  },
-  // --- Az újabb stílusok (a teljesség kedvéért) ---
-  orangeText: {
-    color: 'orange',
-    fontWeight: 'bold'
-  },
-  warningText: {
-      color: '#FFD700', // Sárga/arany figyelmeztető szín
+// 3. A stílusokat egy függvénybe helyeztük, ami a színséma alapján hozza őket létre
+const getStyles = (colorScheme) => {
+  const isDarkMode = colorScheme === 'dark';
+
+  return StyleSheet.create({
+    scrollContainer: {
+      paddingBottom: 20,
+    },
+    container: {
+      marginTop: 20,
+      padding: 0,
+      // Az app.js-sel konzisztens háttérszínek
+      backgroundColor: isDarkMode ? '#0B132B' : '#F5F5F5', 
+      borderRadius: 10,
+    },
+    title: {
+      fontWeight: "bold",
+      fontSize: 18,
+      marginBottom: 10,
+      textAlign: "center",
+      color: isDarkMode ? '#fff' : '#000',
+    },
+    subtitle: {
+      fontWeight: "bold",
+      marginTop: 10,
+      fontSize: 16,
+      textAlign: "center",
+      color: isDarkMode ? '#fff' : '#000',
+    },
+    listKeyText: {
+      fontWeight: 'bold',
+      color: isDarkMode ? '#fff' : '#000',
+    },
+    item: {
+      fontSize: 16,
+      marginBottom: 6,
+      textAlign: "center",
+      color: isDarkMode ? '#fff' : '#000',
+    },
+    growthContainer: {
+      marginTop: 10,
+    },
+    metricsContainer: {
+      marginTop: 10,
+    },
+    card: {
+      backgroundColor: isDarkMode ? "#1C2541" : "#FFFFFF",
+      borderWidth: 1,
+      borderColor: isDarkMode ? '#3A506B' : '#E0E0E0',
+      padding: 10,
+      borderRadius: 8,
+      marginBottom: 10,
+      marginLeft: 15,
+      marginRight: 15,
+      // Árnyék a világos módhoz
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: isDarkMode ? 0 : 0.20,
+      shadowRadius: 1.41,
+      elevation: isDarkMode ? 1 : 2,
+    },
+    expandedText: {
+      marginTop: 10,
+      fontSize: 15,
+      color: isDarkMode ? '#fff' : '#333',
+      textAlign: "center",
+    },
+    // A színkiemelő szövegek (zöld, piros) általában mindkét témán jól működnek
+    greenText: {
+      color: "#3CB371",
+      fontWeight: "bold",
+    },
+    redText: {
+      color: "red",
+      fontWeight: "bold",
+    },
+    orangeText: {
+      color: 'orange',
       fontWeight: 'bold'
-  },
-  defaultText: {
-    color: '#fff', // Visszaállítás a normál fehér színre
-    fontWeight: 'normal'
-  },
-  valueRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center'
-  },
-  itemValue: {
-    fontSize: 16,
-    color: '#fff',
-    textAlign: 'center'
-  },
-  itemIcon: {
-    fontSize: 16,
-    marginLeft: 8
-  },
-  commentText: {
-    fontSize: 14,
-    color: '#B0C4DE', // Világosabb, szürkéskék a kommentekhez
-    textAlign: 'center',
-    marginTop: 4,
-    fontStyle: 'italic',
-    paddingHorizontal: 10
-  },
-  expandedHeader: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: '#6FFFB0', // Kiemelő zöld
-    marginTop: 12,
-    marginBottom: 6,
-    textAlign: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#3A506B',
-    paddingTop: 10,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  detailLabel: {
-    color: '#B0C4DE',
-    fontSize: 14,
-  },
-  detailValue: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  // Táblázat stílusai
-  table: {
-    borderWidth: 1,
-    borderColor: "#4a6572",
-    borderRadius: 8,
-    marginTop: 5,
-    overflow: "hidden",
-  },
-  tableRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-  },
-  tableHeaderRow: {
-    backgroundColor: "#2c3e50",
-    borderBottomWidth: 1,
-    borderColor: "#4a6572",
-  },
-  tableHeader: {
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  tableRowOdd: {
-    backgroundColor: "#75EDA9",
-  },
-  tableRowEven: {
-    backgroundColor: "#fff",
-  },
-  tableCell: {
-    flex: 1,
-    fontSize: 14,
-    color: "#555",
-  },
-  tableCellLight: {
-    color: "#1A2E33",
-    fontWeight: "bold",
-  },
-});
+    },
+    warningText: {
+        color: '#FFD700',
+        fontWeight: 'bold'
+    },
+    defaultText: {
+      color: isDarkMode ? '#fff' : '#000',
+      fontWeight: 'normal'
+    },
+    valueRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center'
+    },
+    itemValue: {
+      fontSize: 16,
+      color: isDarkMode ? '#fff' : '#000',
+      textAlign: 'center'
+    },
+    itemIcon: {
+      fontSize: 16,
+      marginLeft: 8
+    },
+    commentText: {
+      fontSize: 14,
+      color: isDarkMode ? '#B0C4DE' : '#666',
+      textAlign: 'center',
+      marginTop: 4,
+      fontStyle: 'italic',
+      paddingHorizontal: 10
+    },
+    expandedHeader: {
+      fontWeight: "bold",
+      fontSize: 16,
+      color: isDarkMode ? '#6FFFB0' : '#005B41',
+      marginTop: 12,
+      marginBottom: 6,
+      textAlign: 'center',
+      borderTopWidth: 1,
+      borderTopColor: isDarkMode ? '#3A506B' : '#E0E0E0',
+      paddingTop: 10,
+    },
+    detailRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    detailLabel: {
+      color: isDarkMode ? '#B0C4DE' : '#555',
+      fontSize: 14,
+    },
+    detailValue: {
+      color: isDarkMode ? '#fff' : '#000',
+      fontSize: 14,
+      fontWeight: 'bold',
+    },
+    // Táblázat stílusai
+    table: {
+      borderWidth: 1,
+      borderColor: isDarkMode ? "#4a6572" : '#ccc',
+      borderRadius: 8,
+      marginTop: 5,
+      overflow: "hidden",
+    },
+    tableRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+      paddingHorizontal: 10,
+      borderBottomWidth: 1,
+      borderColor: isDarkMode ? "rgba(255, 255, 255, 0.1)" : '#eee',
+    },
+    tableHeaderRow: {
+      backgroundColor: isDarkMode ? "#2c3e50" : '#2c3e50',
+      borderBottomWidth: 1,
+      borderColor: isDarkMode ? "#4a6572" : '#ccc',
+    },
+    tableHeader: {
+      fontWeight: "bold",
+      color: isDarkMode ? "#fff" : '#fff',
+    },
+    // Ezeket a színeket módosítani kellett, hogy világos módban is értelmesek legyenek
+    tableRowOdd: {
+      backgroundColor: isDarkMode ? "#75EDA9" : "#75EDA9",
+    },
+    tableRowEven: {
+      backgroundColor: isDarkMode ? "#fff" : "#fff",
+    },
+    tableCell: {
+      flex: 1,
+      fontSize: 14,
+      color: isDarkMode ? "#555" : '#555', // A sötét módhoz sötét szöveg kell a világos háttér miatt
+    },
+    tableCellLight: {
+      color: "#1A2E33", // Ez a sötétzöld mindkét háttéren jól mutat
+      fontWeight: "bold",
+    },
+    explanationTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: isDarkMode ? '#FFFFFF' : '#1A1A1A',
+      marginTop: 15,
+      marginBottom: 10,
+      textAlign: 'center'
+    },
+    explanationTable: {
+      borderWidth: 1,
+      borderColor: isDarkMode ? '#3A506B' : '#E0E0E0',
+      borderRadius: 8,
+      overflow: 'hidden', // Fontos, hogy a sorok sarka is kerekített legyen
+      marginTop: 5,
+    },
+    explanationRow: {
+      flexDirection: 'row',
+      backgroundColor: 'transparent', // Az alap háttér átlátszó
+      borderBottomWidth: 1,
+      borderBottomColor: isDarkMode ? '#3A506B' : '#E0E0E0',
+    },
+    explanationCell: {
+      paddingVertical: 12,
+      paddingHorizontal: 8,
+      fontSize: 14,
+      color: isDarkMode ? '#E0E0E0' : '#333333',
+      textAlignVertical: 'center',
+    },
+    rangeCell: {
+      flex: 2.5, // Szélességi arány
+      fontWeight: 'bold',
+      justifyContent: 'center',
+    },
+    statusCell: {
+      flex: 3, // Szélességi arány
+      fontWeight: 'bold',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    descriptionCell: {
+      flex: 6.5, // Szélességi arány
+      color: isDarkMode ? '#B0C4DE' : '#555555',
+      justifyContent: 'center',
+    },
+  });
+};
