@@ -77,7 +77,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   stickyTitle: {
     position: "absolute",
-    top: 60,
+    top: 30,
     left: 0,
     right: 0,
     textAlign: "center",
@@ -85,6 +85,9 @@ const getStyles = (theme) => StyleSheet.create({
     fontWeight: "bold",
     color: theme.textPrimary,
     zIndex: 10,
+    backgroundColor: theme.background,
+    paddingBottom: 10,
+    paddingTop: 10,
   },
   timestampText: {
     color: theme.textSecondary,
